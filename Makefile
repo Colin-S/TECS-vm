@@ -1,5 +1,5 @@
 # These are variables
-# The are referenced with the $() syntax later on
+# They are referenced with the $() syntax later on
 # We are using the GNU gcc compiler, which is the most commonly used open-source compiler
 # The following are gcc compiler options:
 #	-Wall = compile with all warnings
