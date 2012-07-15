@@ -1,6 +1,11 @@
 TECS
 ====
 
-The elements of computing systems projects
+Build instructions:
 
-More
+Type 'make'
+
+or
+
+Type 'scons'
+

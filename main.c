@@ -1,5 +1,12 @@
 #include <stdio.h>
+#include "test/test.h"
 
-int main(){
-	printf("Hi Bryan\n");
+#include "util.h"
+#include "file.h"
+
+int main(int argc, char** argv){
+	
+	debug("Start");
+	// Create asm file
+
 }
