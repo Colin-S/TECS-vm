@@ -3,5 +3,9 @@
 #include "../util.h"
 
 void main(){
-	debug("In test main");
+	debug("Start Unit Testing");
+	check_error(test_examinFile() == 0, "Unit test failed");
+
+error:
+	;
 }

@@ -7,7 +7,8 @@ int main(int argc, char** argv){
 	debug("Start");
 
 	// Create asm file
-	int ret = examineFile(argc, argv);
+	AsmFileType asmFile = {"", 0};
+	int ret = examineFile(argc, argv, &asmFile);
 	if (ret != 0)
 		exit(1);
 

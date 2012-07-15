@@ -16,4 +16,8 @@ Misc. Git commands:
 'git pull https://github.com/moreunum/TECS.git' - update your local repository from the remote 		repository
 'git push https://github.com/moreunum/TECS.git' - updates remote repo from local
 'git checkout <file>' - checkout single file from remote repository
+'git checkout <branch>' - Switch branches
 'git add . -A' - Prepares (stages) new and deleted files for a commit command 
+
+Cscope commands (C file browser):
+'cscope -RbqU' - Generate Cscope files at top level

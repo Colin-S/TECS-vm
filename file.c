@@ -3,11 +3,11 @@
 #include "util.h"
 #include "file.h"
 
-void examineFile(int argc, char** argv){
+int examineFile(int argc, char** argv, AsmFileType* asmFile){
 	debug("In examineFile: argc: %d", argc);
 
 	// Check for proper number of arguments
-	check_error(argc == 2, "Usage: vm vmfile.vm");
+	check_error_silent(argc == 2, "Usage: vm vmfile.vm");
 		
 	// Create asm file
 

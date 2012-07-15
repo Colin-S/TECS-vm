@@ -19,4 +19,6 @@
 
 #define check_error(A, M, ...) if(!(A)) { error(M, ##__VA_ARGS__); goto error; }
 
+#define check_error_silent(A, M, ...) if(!(A)) { goto error; }
+
 #endif

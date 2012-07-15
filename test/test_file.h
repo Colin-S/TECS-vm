@@ -1,6 +1,6 @@
 #ifndef TEST_FILE_H
 #define TEST_FILE_H
 
-void test_examinFile();
+int test_examinFile();
 
 #endif
