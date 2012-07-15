@@ -21,6 +21,7 @@ int test_examinFile(){
 	check_error(examineFile(argc, argv, &asmFile) == FAIL, "Failed argc check, argc: %d", argc);
 
 	fclose(vmFile);
+	check_error(remove(fileName) == 0, "Failed to delete %s", fileName);
 	return 0;
 error:
 	return 1;
