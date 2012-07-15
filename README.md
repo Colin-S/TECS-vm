@@ -2,10 +2,8 @@ TECS
 ====
 
 Build instructions:
+Type 'scons' to build
+Type 'scons -c' to remove all object files (clean)
 
-Type 'make'
-
-or
-
-Type 'scons'
-
+Test directory:
+Contains unit tests for each source file
