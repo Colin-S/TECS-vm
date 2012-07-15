@@ -13,8 +13,8 @@ Misc. Git commands:
 'git status' - shows which changes have been committed locally
 'git log --graph' - shows list of commits 
 'git branch' - shows current branch (e.g. master)
-'git pull https://github.com/moreunum/TECS.git' - update your local repository from the remote 		repository
-'git push https://github.com/moreunum/TECS.git' - updates remote repo from local
+'git pull https://github.com/Colin-S/TECS.git' - update your local repository from the remote 		repository
+'git push https://github.com/Colin-S/TECS.git' - updates remote repo from local
 'git checkout <file>' - checkout single file from remote repository
 'git checkout <branch>' - Switch branches
 'git add . -A' - Prepares (stages) new and deleted files for a commit command 
