@@ -18,6 +18,7 @@ Misc. Git commands:
 'git checkout <file>' - checkout single file from remote repository
 'git checkout <branch>' - Switch branches
 'git add . -A' - Prepares (stages) new and deleted files for a commit command 
+'git rm --cached <file>' - stop tracking <file> in git
 
 Cscope commands (C file browser):
 'cscope -RbqU' - Generate Cscope files at top level
