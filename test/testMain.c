@@ -2,10 +2,12 @@
 #include "test_file.h"
 #include "../util.h"
 
-void main(){
+
+int main(){
 	debug("Start Unit Testing");
-	check_error(test_examinFile() == 0, "Unit test failed");
+	test(test_examineFile() == 0, "Unit test failed");
+	test(test_getFileName() == 0, "Unit test failed");
 
 error:
-	;
+	return 0;
 }
