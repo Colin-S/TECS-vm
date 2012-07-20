@@ -11,8 +11,6 @@ enum {
 int test_examineFile(){
 	debug("testing examineFile()");
 	char* fileName = "test.vm";
-	FILE* vmFile = fopen(fileName, "w+");
-	test(vmFile != NULL, "Failed to open %s", fileName);
 	int argc = 1;
 	char* argv[] = {"./vm", fileName};
 	AsmFileType asmFile = {"", MAX_LENGTH};
@@ -28,13 +26,8 @@ int test_examineFile(){
 	test(strcmp(asmFile.fileName, "test.asm") == 0, "Wrong file name: %s, correct: test.asm",
 		asmFile.fileName);
 
-	fclose(vmFile);
-
-	// Remove the temporary test file
-	test(remove(fileName) == 0, "Failed to delete %s", fileName);
 	return 0;
 error:
-	fclose(vmFile);
 	return 1;
 }
 
