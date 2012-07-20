@@ -8,15 +8,14 @@ int examineFile(int argc, char** argv, AsmFileType* asmFile){
 	// Check for proper number of arguments
 	check_error(argc == 2, "Usage: vm vmfile.vm");
 		
-	debug("In examineFile: argc: %d argv[1]: %s", argc, argv[1]);
+	// TODO: check for directory here
 
 	// Create asm file
 	getFileName(argv[1], asmFile->fileName, asmFile->maxLength-4);
-	debug("before strcat: %s", asmFile->fileName);
 	strcat(asmFile->fileName, ".asm");
-	debug("after strcat: %s", asmFile->fileName);
-	fopen(asmFile->fileName, "w");
-
+	FILE* pFile = fopen(asmFile->fileName, "w");
+	check_error(pFile != NULL, "Failed to create .asm file");
+	fclose(pFile);
 	return 0;
 
 error:
@@ -31,7 +30,7 @@ int getFileName(char* inFile, char* fileName, int maxLength){
 		fileName[i] = inFile[i];
 	}
 	fileName[i] = '\0';
-	return 0;
+	return i;
 }
 
 

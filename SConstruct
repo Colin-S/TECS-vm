@@ -9,7 +9,7 @@ env = Environment(CCFLAGS = '-g -Wall -O0 -std=c99', CC = 'gcc')
 
 # Build the VM program
 exe = 'vm'
-src =  ['file.c']
+src =  ['file.c', 'parser.c']
 env.Program(exe, create_objs(src + ['main.c']))
 
 # Build the test program

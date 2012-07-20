@@ -7,10 +7,11 @@ int main(int argc, char** argv){
 	debug("Start");
 
 	// Create asm file
-	AsmFileType asmFile = {"", 0};
+	AsmFileType asmFile = {"", MAX_LENGTH};
 	int ret = examineFile(argc, argv, &asmFile);
-	if (ret != 0)
-		exit(1);
+	check_error(ret == 0, "Examine file returned error");
 
 	return 0;
+error:
+	exit(1);
 }
