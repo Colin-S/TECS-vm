@@ -4,18 +4,21 @@
 #include "util.h"
 #include "file.h"
 
-int examineFile(int argc, char** argv, AsmFileType* asmFile){
+int examineFile(int argc, char** argv, FileInfoType* fileInfo){
 	// Check for proper number of arguments
 	check_error(argc == 2, "Usage: vm vmfile.vm");
 		
 	// TODO: check for directory here
+	// If directory: parse each vm file into a single asm file
 
 	// Create asm file
-	getFileName(argv[1], asmFile->fileName, asmFile->maxLength-4);
-	strcat(asmFile->fileName, ".asm");
-	FILE* pFile = fopen(asmFile->fileName, "w");
+	strncpy(fileInfo->vmFileName, argv[1], fileInfo->maxLength);
+	getFileName(fileInfo->vmFileName, fileInfo->asmFileName, fileInfo->maxLength-4);
+	strcat(fileInfo->asmFileName, ".asm");
+	FILE* pFile = fopen(fileInfo->asmFileName, "w");
 	check_error(pFile != NULL, "Failed to create .asm file");
 	fclose(pFile);
+	debug("asm file: %s, vm file: %s", fileInfo->asmFileName, fileInfo->vmFileName);
 	return 0;
 
 error:

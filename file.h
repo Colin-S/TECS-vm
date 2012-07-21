@@ -3,11 +3,12 @@
 
 #define MAX_LENGTH 30
 typedef struct {
-	char fileName[MAX_LENGTH];
+	char asmFileName[MAX_LENGTH];
+	char vmFileName[MAX_LENGTH];
 	int maxLength;
-} AsmFileType;
+} FileInfoType;
 
-int examineFile(int argc, char** argv, AsmFileType* asmFile);
+int examineFile(int argc, char** argv, FileInfoType* fileInfo);
 int getFileName(char* inFile, char* fileName, int maxLength);
 
 #endif
