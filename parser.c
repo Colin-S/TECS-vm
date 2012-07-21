@@ -4,14 +4,10 @@
 #include "util.h"
 
 // TODO: pass both the asm file and the intermediate file into here
-int parserMain(FileInfoType* fileInfo){
-	debug("asm file: %s, vm file: %s", fileInfo->asmFileName, fileInfo->vmFileName);
-	advance(fileInfo);
-	return 0;
-}
-
 // Get each line from the input vm file
 int advance(FileInfoType* fileInfo){
+	debug("asm file: %s, vm file: %s", fileInfo->asmFileName, fileInfo->vmFileName);
+
 	FILE* vmFile = fopen(fileInfo->vmFileName, "r");
 	check_error(vmFile != NULL, "Failed to open vmFile");
 	FILE* asmFile = fopen(fileInfo->asmFileName, "w");
