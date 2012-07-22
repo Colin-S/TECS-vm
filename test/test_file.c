@@ -9,7 +9,7 @@ enum {
 };
 
 int test_examineFile(){
-	debug("testing examineFile()");
+	debug("== Testing examineFile() ==");
 	char* fileName = "test.vm";
 	int argc = 1;
 	char* argv[] = {"./vm", fileName};
@@ -32,7 +32,7 @@ error:
 }
 
 int test_getFileName(){
-	debug("testing getFileName()");
+	debug("== Testing getFileName() ==");
 	FileInfoType fileInfo = {"", "", MAX_LENGTH};
 	char inFile[] = "abcdecfghijklmnopqrstuvwx.vm";
 	char fileName[] = "abcdecfghijklmnopqrstuvwx";

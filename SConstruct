@@ -14,5 +14,5 @@ env.Program(exe, create_objs(src + ['main.c']))
 
 # Build the test program
 testExe = 'test/vmTest'
-testSrc = src + ['test/testMain.c','test/test_file.c']
+testSrc = src + ['test/testMain.c','test/test_file.c', 'test/test_parser.c']
 env.Program(testExe, create_objs(testSrc))
