@@ -10,6 +10,7 @@ int main(){
 	test_cleanLine();
 	test_cleanLine2();
 	test_commandTypeCheck();
+	test_arg1();
 
 	return 0;
 }

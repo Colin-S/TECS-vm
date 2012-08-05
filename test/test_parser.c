@@ -115,6 +115,26 @@ int test_commandTypeCheck(){
 	test(commandTypeCheck("call") == C_CALL, "Failed call");
 	test(commandTypeCheck("") == -1, "Failed empty string");
 	test(commandTypeCheck(" ") == -1, "Failed bad string");
+	test(commandTypeCheck("add ") == -1, "Failed bad string");
+	return 0;
+error:
+	return 1;
+}
+
+int test_arg1(){
+	debug("== Testing arg1() ==");
+	test(arg1("argument") == A1_ARGUMENT, "Failed argument");
+	test(arg1("local") == A1_LOCAL, "Failed local");
+	test(arg1("static") == A1_STATIC, "Failed static");
+	test(arg1("constant") == A1_CONSTANT, "Failed constant");
+	test(arg1("this") == A1_THIS, "Failed this");
+	test(arg1("that") == A1_THAT, "Failed that");
+	test(arg1("pointer") == A1_POINTER, "Failed pointer");
+	test(arg1("temp") == A1_TEMP, "Failed temp");
+	test(arg1("loop") == A1_LOOP, "Failed loop");
+	test(arg1("") == -1, "Failed empty string");
+	test(arg1(" ") == -1, "Failed bad string");
+	test(arg1("argument ") == -1, "Failed bad string");
 	return 0;
 error:
 	return 1;

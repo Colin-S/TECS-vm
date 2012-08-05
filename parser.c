@@ -44,15 +44,34 @@ int commandType(char* line, Command_t* currentCommand){
 	char* type = strtok(line, " ");
 	char* arg1 = strtok(NULL, " ");
 	char* arg2 = strtok(NULL, " ");
-	debug("%s, %s, %s", type, arg1, arg2);
 
 	// Store command type
 	currentCommand->command = commandTypeCheck(type);
+	// TODO:Store arg1 and arg2 in currentCommand
 
-
+	debug("%s, %s, %s command: %d", type, arg1, arg2, currentCommand->command);
 	return 0;
 error:
 	return 1;
+}
+
+// Interprete the first argument
+int arg1(char* arg){
+	if (strcmp(arg, "argument") == 0) return A1_ARGUMENT;
+	if (strcmp(arg, "local") == 0) return A1_LOCAL;
+	if (strcmp(arg, "static") == 0) return A1_STATIC;
+	if (strcmp(arg, "constant") == 0) return A1_CONSTANT;
+	if (strcmp(arg, "this") == 0) return A1_THIS;
+	if (strcmp(arg, "that") == 0) return A1_THAT;
+	if (strcmp(arg, "pointer") == 0) return A1_POINTER;
+	if (strcmp(arg, "temp") == 0) return A1_TEMP;
+	if (strcmp(arg, "loop") == 0) return A1_LOOP;
+	return -1;
+}
+
+// Interprete the second argument
+int arg2(char* arg){
+	return 0;
 }
 
 // Convert command string to command type
