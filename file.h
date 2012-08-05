@@ -6,9 +6,9 @@ typedef struct {
 	char asmFileName[MAX_LENGTH];
 	char vmFileName[MAX_LENGTH];
 	int maxLength;
-} FileInfoType;
+} FileInfo_t;
 
-int examineFile(int argc, char** argv, FileInfoType* fileInfo);
+int examineFile(int argc, char** argv, FileInfo_t* fileInfo);
 int getFileName(char* inFile, char* fileName, int maxLength);
 
 #endif

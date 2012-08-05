@@ -4,7 +4,7 @@
 #include "util.h"
 #include "file.h"
 
-int examineFile(int argc, char** argv, FileInfoType* fileInfo){
+int examineFile(int argc, char** argv, FileInfo_t* fileInfo){
 	// Check for proper number of arguments
 	check_error(argc == 2, "Usage: vm vmfile.vm");
 		

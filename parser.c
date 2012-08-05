@@ -4,9 +4,9 @@
 #include "file.h"
 #include "util.h"
 
-// TODO: pass both the asm file and the intermediate file into here
+// Pass both the asm file and the intermediate file into here
 // Get each line from the input vm file
-int advance(FileInfoType* fileInfo){
+int advance(FileInfo_t* fileInfo){
 	debug("asm file: %s, vm file: %s", fileInfo->asmFileName, fileInfo->vmFileName);
 
 	FILE* vmFile = fopen(fileInfo->vmFileName, "r");
@@ -17,12 +17,16 @@ int advance(FileInfoType* fileInfo){
 	char line[MAX_LINE_SIZE];
 	while (fgets(line, sizeof(line), vmFile) != NULL){
 
-		// Clean each line, and ignore invalid lines
+		// Remove whitespace from the current line
 		int ret = cleanLine(line, strlen(line));
 		if (ret != 0)
 			continue;
-		// TODO: just writing each line directly to asm file for testing
-		fputs(line, asmFile);
+
+		// Parse the current line
+		Command_t currentCommand = {C_ARITHMETIC, 0, 0};
+		ret = commandType(line, &currentCommand);
+
+		//fputs(line, asmFile);
 	}
 
 	fclose(vmFile);
@@ -32,8 +36,45 @@ error:
 	return 1;
 }
 
-int commandType(char* line){
+// Examine each line to determine the vm command type
+int commandType(char* line, Command_t* currentCommand){
+	check_error(strlen(line) > 0, "Attempting to parse empty command");
+
+	// Examine each portion of the line
+	char* type = strtok(line, " ");
+	char* arg1 = strtok(NULL, " ");
+	char* arg2 = strtok(NULL, " ");
+	debug("%s, %s, %s", type, arg1, arg2);
+
+	// Store command type
+	currentCommand->command = commandTypeCheck(type);
+
+
 	return 0;
+error:
+	return 1;
+}
+
+// Convert command string to command type
+int commandTypeCheck(char* type){
+	if (strcmp(type, "add") == 0) return C_ARITHMETIC;
+	if (strcmp(type, "sub") == 0) return C_ARITHMETIC;
+	if (strcmp(type, "neg") == 0) return C_ARITHMETIC;
+	if (strcmp(type, "eq") == 0) return C_ARITHMETIC;
+	if (strcmp(type, "gt") == 0) return C_ARITHMETIC;
+	if (strcmp(type, "lt") == 0) return C_ARITHMETIC;
+	if (strcmp(type, "and") == 0) return C_ARITHMETIC;
+	if (strcmp(type, "or") == 0) return C_ARITHMETIC;
+	if (strcmp(type, "not") == 0) return C_ARITHMETIC;
+	if (strcmp(type, "push") == 0) return C_PUSH;
+	if (strcmp(type, "pop") == 0) return C_POP;
+	if (strcmp(type, "label") == 0) return C_LABEL;
+	if (strcmp(type, "goto") == 0) return C_GOTO;
+	if (strcmp(type, "if-goto") == 0) return C_IF;
+	if (strcmp(type, "function") == 0) return C_FUNCTION;
+	if (strcmp(type, "return") == 0) return C_RETURN;
+	if (strcmp(type, "call") == 0) return C_CALL;
+	return -1;
 }
 
 // Remove comments and whitespace from a line of text
@@ -54,7 +95,7 @@ int cleanLine(char* str, int size){
 			//debug("Found multiple whitespaces, i: %d", i);
 		}
 		else if (str[i] == '\n'){
-			debug("Found new line, i: %d", i);
+			//debug("Found new line, i: %d", i);
 		}
 		else if (str[i] == '/' && str[i+1] == '/'){
 			//debug("Found comment, i: %d", i);

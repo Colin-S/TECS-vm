@@ -9,6 +9,7 @@ int main(){
 	test_getFileName();
 	test_cleanLine();
 	test_cleanLine2();
+	test_commandTypeCheck();
 
 	return 0;
 }
