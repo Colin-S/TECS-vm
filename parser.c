@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "parser.h"
 #include "file.h"
@@ -23,8 +24,9 @@ int advance(FileInfo_t* fileInfo){
 			continue;
 
 		// Parse the current line
-		Command_t currentCommand = {C_ARITHMETIC, 0, 0};
+		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE};
 		ret = commandType(line, &currentCommand);
+		check_error(ret == 0, "Failed to parse line: %s", line);
 
 		//fputs(line, asmFile);
 	}
@@ -42,14 +44,16 @@ int commandType(char* line, Command_t* currentCommand){
 
 	// Examine each portion of the line
 	char* type = strtok(line, " ");
-	char* arg1 = strtok(NULL, " ");
-	char* arg2 = strtok(NULL, " ");
+	char* argument1 = strtok(NULL, " ");
+	char* argument2 = strtok(NULL, " ");
 
-	// Store command type
+	// Store command information
 	currentCommand->command = commandTypeCheck(type);
-	// TODO:Store arg1 and arg2 in currentCommand
+	currentCommand->arg1 = arg1(argument1);
+	currentCommand->arg2 = arg2(argument2);
 
-	debug("%s, %s, %s command: %d", type, arg1, arg2, currentCommand->command);
+	debug("str[%s, %s, %s] com[%d, %d, %d]", type, argument1, argument2, 
+		currentCommand->command, currentCommand->arg1, currentCommand->arg2);
 	return 0;
 error:
 	return 1;
@@ -57,6 +61,7 @@ error:
 
 // Interprete the first argument
 int arg1(char* arg){
+	check_error_silent(arg != NULL);
 	if (strcmp(arg, "argument") == 0) return A1_ARGUMENT;
 	if (strcmp(arg, "local") == 0) return A1_LOCAL;
 	if (strcmp(arg, "static") == 0) return A1_STATIC;
@@ -66,25 +71,38 @@ int arg1(char* arg){
 	if (strcmp(arg, "pointer") == 0) return A1_POINTER;
 	if (strcmp(arg, "temp") == 0) return A1_TEMP;
 	if (strcmp(arg, "loop") == 0) return A1_LOOP;
-	return -1;
+	// TODO: arg1 can also be a label name if command is goto or if-goto
+error:
+	return A1_NONE;
 }
 
 // Interprete the second argument
 int arg2(char* arg){
-	return 0;
+	check_error_silent(arg != NULL);
+
+	// arg2 can only be an integer within a certain range
+	char* end;
+	long int val = strtol(arg, &end, 0);
+	check_error_silent(arg != end);
+	check_error_silent(val <= CONST_MAX);
+	check_error_silent(val >= CONST_MIN);
+	return val;
+error:
+	return A2_NONE;
 }
 
 // Convert command string to command type
 int commandTypeCheck(char* type){
-	if (strcmp(type, "add") == 0) return C_ARITHMETIC;
-	if (strcmp(type, "sub") == 0) return C_ARITHMETIC;
-	if (strcmp(type, "neg") == 0) return C_ARITHMETIC;
-	if (strcmp(type, "eq") == 0) return C_ARITHMETIC;
-	if (strcmp(type, "gt") == 0) return C_ARITHMETIC;
-	if (strcmp(type, "lt") == 0) return C_ARITHMETIC;
-	if (strcmp(type, "and") == 0) return C_ARITHMETIC;
-	if (strcmp(type, "or") == 0) return C_ARITHMETIC;
-	if (strcmp(type, "not") == 0) return C_ARITHMETIC;
+	check_error_silent(type != NULL);
+	if (strcmp(type, "add") == 0) return C_ADD;
+	if (strcmp(type, "sub") == 0) return C_SUB;
+	if (strcmp(type, "neg") == 0) return C_NEG;
+	if (strcmp(type, "eq") == 0) return C_EQ;
+	if (strcmp(type, "gt") == 0) return C_GT;
+	if (strcmp(type, "lt") == 0) return C_LT;
+	if (strcmp(type, "and") == 0) return C_AND;
+	if (strcmp(type, "or") == 0) return C_OR;
+	if (strcmp(type, "not") == 0) return C_NOT;
 	if (strcmp(type, "push") == 0) return C_PUSH;
 	if (strcmp(type, "pop") == 0) return C_POP;
 	if (strcmp(type, "label") == 0) return C_LABEL;
@@ -93,7 +111,8 @@ int commandTypeCheck(char* type){
 	if (strcmp(type, "function") == 0) return C_FUNCTION;
 	if (strcmp(type, "return") == 0) return C_RETURN;
 	if (strcmp(type, "call") == 0) return C_CALL;
-	return -1;
+error:
+	return C_NONE;
 }
 
 // Remove comments and whitespace from a line of text

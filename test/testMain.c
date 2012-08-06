@@ -11,6 +11,7 @@ int main(){
 	test_cleanLine2();
 	test_commandTypeCheck();
 	test_arg1();
+	test_arg2();
 
 	return 0;
 }

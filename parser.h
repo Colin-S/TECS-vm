@@ -1,16 +1,28 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <limits.h>
 #include "file.h"
 
 // Using enum instead of #define
 enum {
-	MAX_LINE_SIZE = 200
+	MAX_LINE_SIZE = 200,
+	CONST_MIN = 0,
+	CONST_MAX = 32767
 };
 
 // Command types
 typedef enum {
-	C_ARITHMETIC = 0,
+	C_NONE = -1,
+	C_ADD = 0,
+	C_SUB,
+	C_NEG,
+	C_EQ,
+	C_GT,
+	C_LT,
+	C_AND,
+	C_OR,
+	C_NOT,
 	C_PUSH,
 	C_POP,
 	C_LABEL,
@@ -23,6 +35,7 @@ typedef enum {
 
 // Argument 1 types
 typedef enum {
+	A1_NONE = -1,
 	A1_ARGUMENT = 0,
 	A1_LOCAL,
 	A1_STATIC,
@@ -31,14 +44,19 @@ typedef enum {
 	A1_THAT,
 	A1_POINTER,
 	A1_TEMP,
-	A1_LOOP
+	A1_LOOP,
 } Arg1_t;
+
+// Argument 2 types
+typedef enum {
+	A2_NONE = -1
+} Arg2_t;
 
 // Information about the current command
 typedef struct {
 	VmCommand_t command;
 	Arg1_t arg1;
-	int arg2;
+	Arg2_t arg2;
 } Command_t;
 
 int advance(FileInfo_t* fileInfo);

@@ -5,5 +5,6 @@ int test_cleanLine();
 int test_cleanLine2();
 int test_commandTypeCheck();
 int test_arg1();
+int test_arg2();
 
 #endif

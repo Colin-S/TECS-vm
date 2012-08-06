@@ -96,15 +96,15 @@ error:
 
 int test_commandTypeCheck(){
 	debug("== Testing commandTypeCheck() ==");
-	test(commandTypeCheck("add") == C_ARITHMETIC, "Failed add");
-	test(commandTypeCheck("sub") == C_ARITHMETIC, "Failed sub");
-	test(commandTypeCheck("neg") == C_ARITHMETIC, "Failed neg");
-	test(commandTypeCheck("eq") == C_ARITHMETIC, "Failed eq");
-	test(commandTypeCheck("gt") == C_ARITHMETIC, "Failed gt");
-	test(commandTypeCheck("lt") == C_ARITHMETIC, "Failed lt");
-	test(commandTypeCheck("and") == C_ARITHMETIC, "Failed and");
-	test(commandTypeCheck("or") == C_ARITHMETIC, "Failed or");
-	test(commandTypeCheck("not") == C_ARITHMETIC, "Failed not");
+	test(commandTypeCheck("add") == C_ADD, "Failed add");
+	test(commandTypeCheck("sub") == C_SUB, "Failed sub");
+	test(commandTypeCheck("neg") == C_NEG, "Failed neg");
+	test(commandTypeCheck("eq") == C_EQ, "Failed eq");
+	test(commandTypeCheck("gt") == C_GT, "Failed gt");
+	test(commandTypeCheck("lt") == C_LT, "Failed lt");
+	test(commandTypeCheck("and") == C_AND, "Failed and");
+	test(commandTypeCheck("or") == C_OR, "Failed or");
+	test(commandTypeCheck("not") == C_NOT, "Failed not");
 	test(commandTypeCheck("push") == C_PUSH, "Failed push");
 	test(commandTypeCheck("pop") == C_POP, "Failed pop");
 	test(commandTypeCheck("label") == C_LABEL, "Failed label");
@@ -113,9 +113,10 @@ int test_commandTypeCheck(){
 	test(commandTypeCheck("function") == C_FUNCTION, "Failed function");
 	test(commandTypeCheck("return") == C_RETURN, "Failed return");
 	test(commandTypeCheck("call") == C_CALL, "Failed call");
-	test(commandTypeCheck("") == -1, "Failed empty string");
-	test(commandTypeCheck(" ") == -1, "Failed bad string");
-	test(commandTypeCheck("add ") == -1, "Failed bad string");
+	test(commandTypeCheck("") == C_NONE, "Failed empty string");
+	test(commandTypeCheck(" ") == C_NONE, "Failed bad string");
+	test(commandTypeCheck("add ") == C_NONE, "Failed bad string");
+	test(commandTypeCheck(NULL) == C_NONE, "Failed NULL pointer");
 	return 0;
 error:
 	return 1;
@@ -132,12 +133,27 @@ int test_arg1(){
 	test(arg1("pointer") == A1_POINTER, "Failed pointer");
 	test(arg1("temp") == A1_TEMP, "Failed temp");
 	test(arg1("loop") == A1_LOOP, "Failed loop");
-	test(arg1("") == -1, "Failed empty string");
-	test(arg1(" ") == -1, "Failed bad string");
-	test(arg1("argument ") == -1, "Failed bad string");
+	test(arg1("") == A1_NONE, "Failed empty string");
+	test(arg1(" ") == A1_NONE, "Failed bad string");
+	test(arg1("argument ") == A1_NONE, "Failed bad string");
+	test(arg1(NULL) == A1_NONE, "Failed NULL pointer");
 	return 0;
 error:
 	return 1;
 }
 
-//TODO: test commandType
+int test_arg2(){
+	debug("== Testing arg2() ==");
+	test(arg2("") == A2_NONE, "Failed empty string");
+	test(arg2("1") == 1, "Failed 1");
+	test(arg2("2") == 2, "Failed 2");
+	test(arg2("0") == CONST_MIN, "Failed CONST_MIN");
+	test(arg2("32767") == CONST_MAX, "Failed CONST_MAX");
+	test(arg2("-1") == A2_NONE, "Failed -1");
+	test(arg2("32768") == A2_NONE, "Failed CONST_MAX + 1");
+	test(arg2(NULL) == A2_NONE, "Failed NULL pointer");
+	test(arg2("bad") == A2_NONE, "Failed non-numeric string");
+	return 0;
+error:
+	return 1;
+}
