@@ -57,6 +57,7 @@ typedef struct {
 	VmCommand_t command;
 	Arg1_t arg1;
 	Arg2_t arg2;
+	char asmLine[MAX_LINE_SIZE];
 } Command_t;
 
 int advance(FileInfo_t* fileInfo);

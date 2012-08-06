@@ -4,6 +4,7 @@
 #include "parser.h"
 #include "file.h"
 #include "util.h"
+#include "codeWriter.h"
 
 // Pass both the asm file and the intermediate file into here
 // Get each line from the input vm file
@@ -15,20 +16,24 @@ int advance(FileInfo_t* fileInfo){
 	FILE* asmFile = fopen(fileInfo->asmFileName, "w");
 	check_error(asmFile != NULL, "Failed to open asmFile");
 
-	char line[MAX_LINE_SIZE];
-	while (fgets(line, sizeof(line), vmFile) != NULL){
+	char lineIn[MAX_LINE_SIZE];
+	char lineOut[MAX_LINE_SIZE];
+	while (fgets(lineIn, sizeof(lineIn), vmFile) != NULL){
 
 		// Remove whitespace from the current line
-		int ret = cleanLine(line, strlen(line));
+		int ret = cleanLine(lineIn, strlen(lineIn));
 		if (ret != 0)
 			continue;
 
 		// Parse the current line
-		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE};
-		ret = commandType(line, &currentCommand);
-		check_error(ret == 0, "Failed to parse line: %s", line);
+		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, ""};
+		ret = commandType(lineIn, &currentCommand);
+		check_error(ret == 0, "Failed to parse line: %s", lineIn);
 
-		//fputs(line, asmFile);
+		// Translate VM command into ASM
+		ret = writePushPop(&currentCommand);
+
+		//fputs(lineIn, asmFile);
 	}
 
 	fclose(vmFile);
