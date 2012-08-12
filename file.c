@@ -15,12 +15,14 @@ int examineFile(int argc, char** argv, FileInfo_t* fileInfo){
 	strncpy(fileInfo->vmFileName, argv[1], fileInfo->maxLength);
 	getFileName(fileInfo->vmFileName, fileInfo->asmFileName, fileInfo->maxLength-4);
 	strcat(fileInfo->asmFileName, ".asm");
+
 	FILE* pFile = fopen(fileInfo->asmFileName, "w");
 	check_error(pFile != NULL, "Failed to create .asm file");
+
 	fclose(pFile);
 	debug("asm file: %s, vm file: %s", fileInfo->asmFileName, fileInfo->vmFileName);
-	return 0;
 
+	return 0;
 error:
 	return 1;
 }

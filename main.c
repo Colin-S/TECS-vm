@@ -14,7 +14,7 @@ int main(int argc, char** argv){
 
 	// Parse the asm file
 	ret = advance(&fileInfo);
-	check_error(ret == 0, "Parser advance returned an error");
+	check_error_silent(ret == 0);
 
 	return 0;
 error:

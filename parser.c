@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "parser.h"
 #include "file.h"
 #include "util.h"
@@ -11,35 +12,49 @@
 int advance(FileInfo_t* fileInfo){
 	debug("asm file: %s, vm file: %s", fileInfo->asmFileName, fileInfo->vmFileName);
 
+	// Open input and output files
 	FILE* vmFile = fopen(fileInfo->vmFileName, "r");
 	check_error(vmFile != NULL, "Failed to open vmFile");
 	FILE* asmFile = fopen(fileInfo->asmFileName, "w");
 	check_error(asmFile != NULL, "Failed to open asmFile");
 
-	char lineIn[MAX_LINE_SIZE];
-	char lineOut[MAX_LINE_SIZE];
-	while (fgets(lineIn, sizeof(lineIn), vmFile) != NULL){
+	// Initialize the stack pointer to address 256
+	fputs("// Init SP\n@256\nD=A\n@SP\nM=D\n", asmFile);
+
+	// Translate each line of the input file
+	int lineCount = -1;
+	char lineIn[MAX_LINE_SIZE] = "";
+	char tempLine[MAX_LINE_SIZE];
+	int lineInSize = sizeof(lineIn);
+	while (fgets(lineIn, lineInSize, vmFile) != NULL){
+		++lineCount;
 
 		// Remove whitespace from the current line
 		int ret = cleanLine(lineIn, strlen(lineIn));
 		if (ret != 0)
 			continue;
+		strcpy(tempLine, lineIn);
 
-		// Parse the current line
-		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, ""};
+		// Tokenize the current line
+		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, NULL, lineCount, ""};
 		ret = commandType(lineIn, &currentCommand);
 		check_error(ret == 0, "Failed to parse line: %s", lineIn);
 
 		// Translate VM command into ASM
-		ret = writePushPop(&currentCommand);
+		translate(&currentCommand);
+		check_error_silent(currentCommand.translator != NULL);
 
-		//fputs(lineIn, asmFile);
+		ret = currentCommand.translator(&currentCommand);
+		check_error_silent(ret == 0);
+
+		fputs(currentCommand.asmLine, asmFile);
 	}
 
 	fclose(vmFile);
 	fclose(asmFile);
 	return 0;
 error:
+	printf("[ERROR] %s:%d:\"%s\"\n", fileInfo->vmFileName, lineCount, tempLine);
 	return 1;
 }
 
@@ -145,7 +160,7 @@ int cleanLine(char* str, int size){
 			break;
 		}
 		else {
-			cleaned[j++] = str[i];
+			cleaned[j++] = tolower(str[i]);
 		}
 	}
 	check_error_silent(strlen(cleaned) > 0);

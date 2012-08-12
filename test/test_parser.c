@@ -90,6 +90,13 @@ int test_cleanLine2(){
 	char line7[MAX_LINE_SIZE] =  " \n";
 	test(cleanLine(line7, strlen(line7)) == FAIL, "Failed empty line: %s", line7);
 
+	//debug("== Test uppercase ==");
+	char line8[MAX_LINE_SIZE] =  "ADD\n";
+	char result8[] = "add";
+	test(cleanLine(line8, strlen(line8)) == PASS, "Failed uppercase: %s", line8);
+	test(strcmp(line8, result8) == PASS, "Bad returned string: %s, size: %d, correct size: %d", 
+		line8, strlen(line8), strlen(result8));
+
 error:
 	return 0;
 }

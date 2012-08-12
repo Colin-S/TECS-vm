@@ -53,12 +53,17 @@ typedef enum {
 } Arg2_t;
 
 // Information about the current command
-typedef struct {
+// Need to do typedef this way to allow 
+//  function pointer to use Command_t
+typedef struct command_type Command_t;
+struct command_type{
 	VmCommand_t command;
 	Arg1_t arg1;
 	Arg2_t arg2;
+	int (*translator)(Command_t*);
+	int lineCount;
 	char asmLine[MAX_LINE_SIZE];
-} Command_t;
+};
 
 int advance(FileInfo_t* fileInfo);
 int cleanLine(char* str, int size);

@@ -1,11 +1,5 @@
 // Test vm file
 
-// Add 1 + 2
 push constant 1
 push constant 2
-add
-pop local 0 // local 0 = 3
-push local 0
 push constant 2
-sub
-pop local 1 // local 1 = 1
