@@ -2,4 +2,6 @@
 
 push constant 1
 push constant 2
-push constant 2
+Add
+push CONSTANT 100
+add // should be 103
