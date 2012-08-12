@@ -5,3 +5,5 @@ push constant 2
 Add
 push CONSTANT 100
 add // should be 103
+push constant  5
+sub

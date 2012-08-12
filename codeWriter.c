@@ -11,7 +11,7 @@ int translate(Command_t* currentCommand){
 	// Which command is it?
 	switch (currentCommand->command){
 		case C_ADD: currentCommand->translator = writeAdd; break;
-		case C_SUB: check_error(false, "Invalid VM command found"); break;
+		case C_SUB: currentCommand->translator = writeSub; break;
 		case C_NEG: check_error(false, "Invalid VM command found"); break;
 		case C_EQ: check_error(false, "Invalid VM command found"); break;
 		case C_GT: check_error(false, "Invalid VM command found"); break;
@@ -37,6 +37,15 @@ int writeAdd(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "ADD should not have arguments");
 	strcpy(currentCommand->asmLine,
 		"// add\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M+D\n@SP\nM=M+1\n");
+	return 0;
+error:
+	return 1;
+}
+
+int writeSub(Command_t* currentCommand){
+	check_error(currentCommand->arg1 == A1_NONE, "SUB should not have arguments");
+	strcpy(currentCommand->asmLine,
+		"// subtract\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M-D\n@SP\nM=M+1\n");
 	return 0;
 error:
 	return 1;
