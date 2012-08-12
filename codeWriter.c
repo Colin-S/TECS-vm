@@ -12,13 +12,13 @@ int translate(Command_t* currentCommand){
 	switch (currentCommand->command){
 		case C_ADD: currentCommand->translator = writeAdd; break;
 		case C_SUB: currentCommand->translator = writeSub; break;
-		case C_NEG: check_error(false, "Invalid VM command found"); break;
+		case C_NEG: currentCommand->translator = writeNeg; break;
 		case C_EQ: check_error(false, "Invalid VM command found"); break;
 		case C_GT: check_error(false, "Invalid VM command found"); break;
 		case C_LT: check_error(false, "Invalid VM command found"); break;
-		case C_AND: check_error(false, "Invalid VM command found"); break;
-		case C_OR: check_error(false, "Invalid VM command found"); break;
-		case C_NOT: check_error(false, "Invalid VM command found"); break;
+		case C_AND: currentCommand->translator = writeAnd; break;
+		case C_OR: currentCommand->translator = writeOr; break;
+		case C_NOT: currentCommand->translator = writeNot; break;
 		case C_PUSH: currentCommand->translator = writePush; break;
 		case C_POP: check_error(false, "Invalid VM command found"); break;
 		case C_LABEL: check_error(false, "Invalid VM command found"); break;
@@ -28,6 +28,42 @@ int translate(Command_t* currentCommand){
 		case C_RETURN: check_error(false, "Invalid VM command found"); break;
 		case C_CALL: check_error(false, "Invalid VM command found"); break;
 		default: check_error(false, "Invalid VM command found"); }
+	return 0;
+error:
+	return 1;
+}
+
+int writeOr(Command_t* currentCommand){
+	check_error(currentCommand->arg1 == A1_NONE, "OR should not have arguments");
+	strcpy(currentCommand->asmLine,
+		"// or\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n");
+	return 0;
+error:
+	return 1;
+}
+
+int writeAnd(Command_t* currentCommand){
+	check_error(currentCommand->arg1 == A1_NONE, "AND should not have arguments");
+	strcpy(currentCommand->asmLine,
+		"// and\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M&D\n@SP\nM=M+1\n");
+	return 0;
+error:
+	return 1;
+}
+
+int writeNot(Command_t* currentCommand){
+	check_error(currentCommand->arg1 == A1_NONE, "NOT should not have arguments");
+	strcpy(currentCommand->asmLine,
+		"// not\n@SP\nM=M-1\nA=M\nM=!M\n@SP\nM=M+1\n");
+	return 0;
+error:
+	return 1;
+}
+
+int writeNeg(Command_t* currentCommand){
+	check_error(currentCommand->arg1 == A1_NONE, "NEG should not have arguments");
+	strcpy(currentCommand->asmLine,
+		"// negate\n@SP\nM=M-1\nA=M\nM=-M\n@SP\nM=M+1\n");
 	return 0;
 error:
 	return 1;
