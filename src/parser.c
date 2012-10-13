@@ -24,7 +24,7 @@ int advance(FileInfo_t* fileInfo){
 	// Translate each line of the input file
 	int lineCount = -1;
 	char lineIn[MAX_LINE_SIZE] = "";
-	char tempLine[MAX_LINE_SIZE];
+	char tempLine[MAX_LINE_SIZE] = "";
 	int lineInSize = sizeof(lineIn);
 	while (fgets(lineIn, lineInSize, vmFile) != NULL){
 		++lineCount;
@@ -47,6 +47,7 @@ int advance(FileInfo_t* fileInfo){
 		ret = currentCommand.translator(&currentCommand);
 		check_error_silent(ret == 0);
 
+    // Write the ASM commands to the ASM file
 		fputs(currentCommand.asmLine, asmFile);
 	}
 

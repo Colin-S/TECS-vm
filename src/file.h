@@ -1,10 +1,13 @@
 #ifndef FILE_H
 #define FILE_H
 
-#define MAX_LENGTH 30
+enum {
+  MAX_FILE_LENGTH = 30
+};
+
 typedef struct {
-	char asmFileName[MAX_LENGTH];
-	char vmFileName[MAX_LENGTH];
+	char asmFileName[MAX_FILE_LENGTH];
+	char vmFileName[MAX_FILE_LENGTH];
 	int maxLength;
 } FileInfo_t;
 
