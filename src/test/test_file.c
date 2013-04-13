@@ -26,6 +26,13 @@ int test_examineFile(){
 	test(strcmp(fileInfo.asmFileName, "test.asm") == 0, "Wrong file name: %s, correct: test.asm",
 		fileInfo.asmFileName);
 
+  // Attempt to overwrite file name buffer
+	char* fileName2 = "1234567890abcdefghij1234567890";
+	char* argv2[] = {"./vm", fileName2};
+  examineFile(2, argv2, &fileInfo);
+	test(strcmp(fileInfo.vmFileName, fileName2) == 0, "Wrong file name: %s, correct: %s",
+		fileInfo.vmFileName, "1234567890abcdefghij123456789");
+
 	return 0;
 error:
 	return 1;

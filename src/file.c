@@ -12,7 +12,7 @@ int examineFile(int argc, char** argv, FileInfo_t* fileInfo){
 	// If directory: parse each vm file into a single asm file
 
 	// Create asm file
-	strncpy(fileInfo->vmFileName, argv[1], fileInfo->maxLength);
+	snprintf(fileInfo->vmFileName, fileInfo->maxLength, "%s", argv[1]);
 	getFileName(fileInfo->vmFileName, fileInfo->asmFileName, fileInfo->maxLength-4);
 	strcat(fileInfo->asmFileName, ".asm");
 
