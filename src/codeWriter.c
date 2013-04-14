@@ -23,7 +23,7 @@ int initAsm(FILE* asmFile){
   fputs(asmStrings[ASM_PUSH_TRUE], asmFile);
   fputs(asmStrings[ASM_PUSH_FALSE], asmFile);
   fputs("(programStart)\n", asmFile);
-  fputs("// Program Code /////////\n", asmFile);
+  fputs("\n// Program Code /////////\n", asmFile);
 	return 0;
 error:
 	return 1;
