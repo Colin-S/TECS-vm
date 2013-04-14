@@ -18,8 +18,8 @@ int advance(FileInfo_t* fileInfo){
 	FILE* asmFile = fopen(fileInfo->asmFileName, "w");
 	check_error(asmFile != NULL, "Failed to open asmFile");
 
-	// Initialize the stack pointer to address 256
-	fputs("// Init SP\n@256\nD=A\n@SP\nM=D\n", asmFile);
+	// Add initialization code to the ASM file
+  initAsm(asmFile);
 
 	// Translate each line of the input file
 	int lineCount = -1;

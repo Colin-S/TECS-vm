@@ -4,6 +4,31 @@
 #include "codeWriter.h"
 #include "util.h"
 
+enum asmStrings_t {
+  ASM_INIT_SP = 0,
+  ASM_PUSH_TRUE,
+  ASM_PUSH_FALSE
+};
+
+char* asmStrings[] = {
+  "// Init SP\n@256\nD=A\n@SP\nM=D\n",
+  "(pushTrue)\n@SP\nA=M\nM=-1\n@SP\nM=M+1\nA=D\n0;JMP\n",
+  "(pushFalse)\n@SP\nA=M\nM=0\n@SP\nM=M+1\nA=D\n0;JMP\n"
+};
+
+int initAsm(FILE* asmFile){
+  fputs("// Init Code ////////////\n", asmFile);
+  fputs(asmStrings[ASM_INIT_SP], asmFile);
+  fputs("@programStart\n0;JMP\n", asmFile);
+  fputs(asmStrings[ASM_PUSH_TRUE], asmFile);
+  fputs(asmStrings[ASM_PUSH_FALSE], asmFile);
+  fputs("(programStart)\n", asmFile);
+  fputs("// Program Code /////////\n", asmFile);
+	return 0;
+error:
+	return 1;
+}
+
 int translate(Command_t* currentCommand){
 	//TODO: this function should assign a function pointer to
 	//		the correct translation function
@@ -28,6 +53,15 @@ int translate(Command_t* currentCommand){
 		case C_RETURN: check_error(false, "Invalid VM command found"); break;
 		case C_CALL: check_error(false, "Invalid VM command found"); break;
 		default: check_error(false, "Invalid VM command found"); }
+	return 0;
+error:
+	return 1;
+}
+
+int writeEqual(Command_t* currentCommand){
+	check_error(currentCommand->arg1 == A1_NONE, "OR should not have arguments");
+	strcpy(currentCommand->asmLine,
+		"// or\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n");
 	return 0;
 error:
 	return 1;

@@ -8,6 +8,7 @@ M=D
 @SP
 A=M
 M=-1
+A=D
 (pushfalse)
 @SP
 A=M
