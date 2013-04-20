@@ -1,6 +1,6 @@
 push constant 1
 push constant 1
-eq
+or
 
 push constant 1
 push constant 2

@@ -36,7 +36,7 @@ int advance(FileInfo_t* fileInfo){
 		strcpy(tempLine, lineIn);
 
 		// Tokenize the current line
-		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, NULL, lineCount, ""};
+		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, NULL, lineCount, "", MAX_LINE_SIZE};
 		ret = commandType(lineIn, &currentCommand);
 		check_error(ret == 0, "Failed to parse line: %s", lineIn);
 

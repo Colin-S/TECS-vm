@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include <limits.h>
+#include <string.h>
 #include "file.h"
 
 // Using enum instead of #define
@@ -63,6 +64,7 @@ struct command_type{
 	int (*translator)(Command_t*);
 	int lineCount;
 	char asmLine[MAX_LINE_SIZE];
+  size_t maxLineSize;
 };
 
 int advance(FileInfo_t* fileInfo);

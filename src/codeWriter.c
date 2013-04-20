@@ -1,36 +1,50 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "parser.h"
 #include "codeWriter.h"
 #include "util.h"
 
-#define 
+#define RETURN_REG "R13"
+#define RETURN(X) "@" X "\nA=M;JMP\n"
+
 enum asmStrings_t {
-  ASM_INIT_SP = 0,
+  ASM_JMP_TO_START,
+  ASM_INIT_SP,
   ASM_PUSH_TRUE,
   ASM_PUSH_FALSE,
   ASM_OR,
 };
 
-char* asmStrings[] = {
+static char* asmStrings[] = {
+  "@programstart\n0;JMP\n",
   "// Init SP\n@256\nD=A\n@SP\nM=D\n",
-  "(pushTrue)\n@SP\nA=M\nM=-1\n@SP\nM=M+1\nA=D\n0;JMP\n",
-  "(pushFalse)\n@SP\nA=M\nM=0\n@SP\nM=M+1\nA=D\n0;JMP\n",
+  "(pushTrue)\n@SP\nA=M\nM=-1\n@SP\nM=M+1\n",
+  "(pushFalse)\n@SP\nA=M\nM=0\n@SP\nM=M+1\n",
   "(or)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n"
 };
 
+int returnWrap(Command_t* currentCommand, const char* title, const char* code);
+int writeAdd(Command_t* currentCommand);
+int writeSub(Command_t* currentCommand);
+int writeNeg(Command_t* currentCommand);
+int writeNot(Command_t* currentCommand);
+int writeAnd(Command_t* currentCommand);
+int writeOr(Command_t* currentCommand);
+int writePush(Command_t* currentCommand);
+int writeEqual(Command_t* currentCommand);
+
+///////////////////////////////////////////////////////////////////////////////
 int initAsm(FILE* asmFile){
-  fputs("// Init Code ////////////\n", asmFile);
-  fputs(asmStrings[ASM_INIT_SP], asmFile);
-  fputs("@programStart\n0;JMP\n", asmFile);
-  fputs(asmStrings[ASM_PUSH_TRUE], asmFile);
-  fputs(asmStrings[ASM_PUSH_FALSE], asmFile);
-  fputs(asmStrings[ASM_OR], asmFile);
-  fputs("(programStart)\n", asmFile);
-  fputs("\n// Program Code /////////\n", asmFile);
+  fprintf(asmFile, "// Init Code ////////////\n");
+  fprintf(asmFile, "%s\n", asmStrings[ASM_INIT_SP]);
+  fprintf(asmFile, "%s\n", asmStrings[ASM_JMP_TO_START]);
+  fprintf(asmFile, "%s%s\n", asmStrings[ASM_PUSH_TRUE], RETURN(RETURN_REG));
+  fprintf(asmFile, "%s%s\n", asmStrings[ASM_PUSH_FALSE], RETURN(RETURN_REG));
+  fprintf(asmFile, "%s%s\n", asmStrings[ASM_OR], RETURN(RETURN_REG));
+  fprintf(asmFile, "(programStart)\n");
+  fprintf(asmFile, "\n// Program Code /////////\n");
 	return 0;
-error:
-	return 1;
 }
 
 static uint32_t labelCount = 0;
@@ -66,10 +80,12 @@ error:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int writeEqual(Command_t* currentCommand, uint32_t labelCount){
-	check_error(currentCommand->arg1 == A1_NONE, "EQ should not have arguments");
-	strcpy(currentCommand->asmLine,
-		"// EQ\n@l%u // Auto-generated label\nD=A\n", labelCount++);
+int returnWrap(Command_t* currentCommand, const char* title, const char* code){
+	check_error(strlen(code) > 0, "Code string is empty");
+	snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
+    "%s@l%u\nD=A\n@%s\nM=D\n%s(l%u)\n", title, labelCount, RETURN_REG,
+    code, labelCount);
+  labelCount++;
 	return 0;
 error:
 	return 1;
@@ -78,7 +94,17 @@ error:
 ///////////////////////////////////////////////////////////////////////////////
 int writeOr(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "OR should not have arguments");
-	snprintf(currentCommand->asmLine, MAX_LINE_SIZE, "%s", );
+  returnWrap(currentCommand, "// Or\n", "@or\n0;JMP\n");
+	return 0;
+error:
+	return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int writeEqual(Command_t* currentCommand){
+	check_error(currentCommand->arg1 == A1_NONE, "EQ should not have arguments");
+	snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
+		"// EQ\n@l%u // Auto-generated label\nD=A\n", labelCount++);
 	return 0;
 error:
 	return 1;
