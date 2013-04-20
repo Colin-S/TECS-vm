@@ -14,14 +14,16 @@ enum asmStrings_t {
   ASM_PUSH_TRUE,
   ASM_PUSH_FALSE,
   ASM_OR,
+  ASM_AND,
 };
 
 static char* asmStrings[] = {
-  "@programstart\n0;JMP\n",
+  "@programStart\n0;JMP\n",
   "// Init SP\n@256\nD=A\n@SP\nM=D\n",
   "(pushTrue)\n@SP\nA=M\nM=-1\n@SP\nM=M+1\n",
   "(pushFalse)\n@SP\nA=M\nM=0\n@SP\nM=M+1\n",
-  "(or)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n"
+  "(or)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n",
+  "(and)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M&D\n@SP\nM=M+1\n"
 };
 
 int returnWrap(Command_t* currentCommand, const char* title, const char* code);
@@ -35,6 +37,8 @@ int writePush(Command_t* currentCommand);
 int writeEqual(Command_t* currentCommand);
 
 ///////////////////////////////////////////////////////////////////////////////
+// Store each command at the top of the file, for easy reuse
+///////////////////////////////////////////////////////////////////////////////
 int initAsm(FILE* asmFile){
   fprintf(asmFile, "// Init Code ////////////\n");
   fprintf(asmFile, "%s\n", asmStrings[ASM_INIT_SP]);
@@ -42,6 +46,7 @@ int initAsm(FILE* asmFile){
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_PUSH_TRUE], RETURN(RETURN_REG));
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_PUSH_FALSE], RETURN(RETURN_REG));
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_OR], RETURN(RETURN_REG));
+  fprintf(asmFile, "%s%s\n", asmStrings[ASM_AND], RETURN(RETURN_REG));
   fprintf(asmFile, "(programStart)\n");
   fprintf(asmFile, "\n// Program Code /////////\n");
 	return 0;
@@ -113,8 +118,7 @@ error:
 ///////////////////////////////////////////////////////////////////////////////
 int writeAnd(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "AND should not have arguments");
-	strcpy(currentCommand->asmLine,
-		"// and\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M&D\n@SP\nM=M+1\n");
+  returnWrap(currentCommand, "// And\n", "@and\n0;JMP\n");
 	return 0;
 error:
 	return 1;
