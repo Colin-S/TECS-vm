@@ -4,16 +4,19 @@
 #include "codeWriter.h"
 #include "util.h"
 
+#define 
 enum asmStrings_t {
   ASM_INIT_SP = 0,
   ASM_PUSH_TRUE,
-  ASM_PUSH_FALSE
+  ASM_PUSH_FALSE,
+  ASM_OR,
 };
 
 char* asmStrings[] = {
   "// Init SP\n@256\nD=A\n@SP\nM=D\n",
   "(pushTrue)\n@SP\nA=M\nM=-1\n@SP\nM=M+1\nA=D\n0;JMP\n",
-  "(pushFalse)\n@SP\nA=M\nM=0\n@SP\nM=M+1\nA=D\n0;JMP\n"
+  "(pushFalse)\n@SP\nA=M\nM=0\n@SP\nM=M+1\nA=D\n0;JMP\n",
+  "(or)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n"
 };
 
 int initAsm(FILE* asmFile){
@@ -22,6 +25,7 @@ int initAsm(FILE* asmFile){
   fputs("@programStart\n0;JMP\n", asmFile);
   fputs(asmStrings[ASM_PUSH_TRUE], asmFile);
   fputs(asmStrings[ASM_PUSH_FALSE], asmFile);
+  fputs(asmStrings[ASM_OR], asmFile);
   fputs("(programStart)\n", asmFile);
   fputs("\n// Program Code /////////\n", asmFile);
 	return 0;
@@ -29,6 +33,9 @@ error:
 	return 1;
 }
 
+static uint32_t labelCount = 0;
+
+///////////////////////////////////////////////////////////////////////////////
 int translate(Command_t* currentCommand){
 	//TODO: this function should assign a function pointer to
 	//		the correct translation function
@@ -38,8 +45,8 @@ int translate(Command_t* currentCommand){
 		case C_ADD: currentCommand->translator = writeAdd; break;
 		case C_SUB: currentCommand->translator = writeSub; break;
 		case C_NEG: currentCommand->translator = writeNeg; break;
-		case C_EQ: check_error(false, "Invalid VM command found"); break;
-		case C_GT: check_error(false, "Invalid VM command found"); break;
+		case C_EQ: currentCommand->translator = writeEqual; break;
+    case C_GT: check_error(false, "Invalid VM command found"); break;
 		case C_LT: check_error(false, "Invalid VM command found"); break;
 		case C_AND: currentCommand->translator = writeAnd; break;
 		case C_OR: currentCommand->translator = writeOr; break;
@@ -58,24 +65,26 @@ error:
 	return 1;
 }
 
-int writeEqual(Command_t* currentCommand){
-	check_error(currentCommand->arg1 == A1_NONE, "OR should not have arguments");
+///////////////////////////////////////////////////////////////////////////////
+int writeEqual(Command_t* currentCommand, uint32_t labelCount){
+	check_error(currentCommand->arg1 == A1_NONE, "EQ should not have arguments");
 	strcpy(currentCommand->asmLine,
-		"// or\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n");
+		"// EQ\n@l%u // Auto-generated label\nD=A\n", labelCount++);
 	return 0;
 error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int writeOr(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "OR should not have arguments");
-	strcpy(currentCommand->asmLine,
-		"// or\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n");
+	snprintf(currentCommand->asmLine, MAX_LINE_SIZE, "%s", );
 	return 0;
 error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int writeAnd(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "AND should not have arguments");
 	strcpy(currentCommand->asmLine,
@@ -85,6 +94,7 @@ error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int writeNot(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "NOT should not have arguments");
 	strcpy(currentCommand->asmLine,
@@ -94,6 +104,7 @@ error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int writeNeg(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "NEG should not have arguments");
 	strcpy(currentCommand->asmLine,
@@ -103,6 +114,7 @@ error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int writeAdd(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "ADD should not have arguments");
 	strcpy(currentCommand->asmLine,
@@ -112,6 +124,7 @@ error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int writeSub(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "SUB should not have arguments");
 	strcpy(currentCommand->asmLine,
@@ -121,6 +134,7 @@ error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int writePush(Command_t* currentCommand){
 	switch (currentCommand->arg1){
 		case A1_ARGUMENT:
