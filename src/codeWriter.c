@@ -10,10 +10,6 @@
 #define RETURN(X)   "@" X "\nA=M;JMP\n"
 #define PUSH(X)     "(push)\n@" X "\nA=M\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
 
-enum {
-  MAX_CONST_LENGTH = 6
-};
-
 enum asmStrings_t {
   ASM_JMP_TO_START,
   ASM_INIT_SP,
@@ -49,9 +45,11 @@ int writeAnd(Command_t* currentCommand);
 int writeOr(Command_t* currentCommand);
 int writePush(Command_t* currentCommand);
 int writeEqual(Command_t* currentCommand);
+int writeLessThan(Command_t* currentCommand);
+int writeGreaterThan(Command_t* currentCommand);
 
 ///////////////////////////////////////////////////////////////////////////////
-// Store each command at the top of the file, for easy reuse
+// Store commands at the top of the file, for easy reuse
 ///////////////////////////////////////////////////////////////////////////////
 int initAsm(FILE* asmFile){
   fprintf(asmFile, "// Init Code ////////////\n");
@@ -84,8 +82,8 @@ int translate(Command_t* currentCommand){
 		case C_SUB: currentCommand->translator = writeSub; break;
 		case C_NEG: currentCommand->translator = writeNeg; break;
 		case C_EQ: currentCommand->translator = writeEqual; break;
-    case C_GT: check_error(false, "Invalid VM command found"); break;
-		case C_LT: check_error(false, "Invalid VM command found"); break;
+    case C_GT: currentCommand->translator = writeGreaterThan; break;
+		case C_LT: currentCommand->translator = writeLessThan; break;
 		case C_AND: currentCommand->translator = writeAnd; break;
 		case C_OR: currentCommand->translator = writeOr; break;
 		case C_NOT: currentCommand->translator = writeNot; break;
@@ -124,6 +122,36 @@ int writeOr(Command_t* currentCommand){
   return 0;
 error:
   return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int writeLessThan(Command_t* currentCommand){
+	check_error(currentCommand->arg1 == A1_NONE, "LT should not have arguments");
+  char buf1[100] = "";
+  returnWrap(buf1, sizeof(buf1)-1, "// Less Than\n", "@sub\n0;JMP\n");
+  char buf2[100] = "";
+  returnWrap(buf2, sizeof(buf2)-1, 
+    "", "@SP\nM=M-1\nA=M\nD=M\n@pushTrue\nD;JLT\n@pushFalse\n0;JMP\n");
+	snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
+		"%s%s", buf1, buf2);
+	return 0;
+error:
+	return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int writeGreaterThan(Command_t* currentCommand){
+	check_error(currentCommand->arg1 == A1_NONE, "GT should not have arguments");
+  char buf1[100] = "";
+  returnWrap(buf1, sizeof(buf1)-1, "// Greater Than\n", "@sub\n0;JMP\n");
+  char buf2[100] = "";
+  returnWrap(buf2, sizeof(buf2)-1, 
+    "", "@SP\nM=M-1\nA=M\nD=M\n@pushTrue\nD;JGT\n@pushFalse\n0;JMP\n");
+	snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
+		"%s%s", buf1, buf2);
+	return 0;
+error:
+	return 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
