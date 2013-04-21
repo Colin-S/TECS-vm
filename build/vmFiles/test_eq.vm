@@ -1,0 +1,9 @@
+push constant 1
+push constant 2
+eq
+// Top of stack should be 0
+
+push constant 1
+push constant 1
+eq
+// Top of stack should be -1

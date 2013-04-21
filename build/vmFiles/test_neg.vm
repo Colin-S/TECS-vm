@@ -1,0 +1,3 @@
+push constant 1
+neg
+// Top of stack = -1

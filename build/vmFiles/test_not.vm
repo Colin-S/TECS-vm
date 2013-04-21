@@ -1,0 +1,3 @@
+push constant 14
+not
+// Top of stack = -16

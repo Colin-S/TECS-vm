@@ -1,0 +1,4 @@
+push constant 1
+push constant 2
+or
+// Top of stack = 3

@@ -5,8 +5,14 @@
 #include "codeWriter.h"
 #include "util.h"
 
-#define RETURN_REG "R13"
-#define RETURN(X) "@" X "\nA=M;JMP\n"
+#define RETURN_REG  "R13"
+#define PUSH_REG    "R14"
+#define RETURN(X)   "@" X "\nA=M;JMP\n"
+#define PUSH(X)     "(push)\n@" X "\nA=M\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+
+enum {
+  MAX_CONST_LENGTH = 6
+};
 
 enum asmStrings_t {
   ASM_JMP_TO_START,
@@ -15,6 +21,10 @@ enum asmStrings_t {
   ASM_PUSH_FALSE,
   ASM_OR,
   ASM_AND,
+  ASM_NOT,
+  ASM_NEG,
+  ASM_ADD,
+  ASM_SUB,
 };
 
 static char* asmStrings[] = {
@@ -23,10 +33,14 @@ static char* asmStrings[] = {
   "(pushTrue)\n@SP\nA=M\nM=-1\n@SP\nM=M+1\n",
   "(pushFalse)\n@SP\nA=M\nM=0\n@SP\nM=M+1\n",
   "(or)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n",
-  "(and)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M&D\n@SP\nM=M+1\n"
+  "(and)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M&D\n@SP\nM=M+1\n",
+  "(not)\n@SP\nM=M-1\nA=M\nM=!M\n@SP\nM=M+1\n",
+  "(neg)\n@SP\nM=M-1\nA=M\nM=-M\n@SP\nM=M+1\n",
+  "(add)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M+D\n@SP\nM=M+1\n",
+  "(sub)\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M-D\n@SP\nM=M+1\n",
 };
 
-int returnWrap(Command_t* currentCommand, const char* title, const char* code);
+int returnWrap(char* buf, size_t bufSize, const char* title, const char* code);
 int writeAdd(Command_t* currentCommand);
 int writeSub(Command_t* currentCommand);
 int writeNeg(Command_t* currentCommand);
@@ -47,6 +61,11 @@ int initAsm(FILE* asmFile){
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_PUSH_FALSE], RETURN(RETURN_REG));
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_OR], RETURN(RETURN_REG));
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_AND], RETURN(RETURN_REG));
+  fprintf(asmFile, "%s%s\n", asmStrings[ASM_NOT], RETURN(RETURN_REG));
+  fprintf(asmFile, "%s%s\n", asmStrings[ASM_NEG], RETURN(RETURN_REG));
+  fprintf(asmFile, "%s%s\n", asmStrings[ASM_ADD], RETURN(RETURN_REG));
+  fprintf(asmFile, "%s%s\n", asmStrings[ASM_SUB], RETURN(RETURN_REG));
+  fprintf(asmFile, "%s%s\n", PUSH(PUSH_REG), RETURN(RETURN_REG));
   fprintf(asmFile, "(programStart)\n");
   fprintf(asmFile, "\n// Program Code /////////\n");
 	return 0;
@@ -85,11 +104,12 @@ error:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int returnWrap(Command_t* currentCommand, const char* title, const char* code){
+int returnWrap(char* buf, size_t bufSize, const char* title, const char* code){
 	check_error(strlen(code) > 0, "Code string is empty");
-	snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "%s@l%u\nD=A\n@%s\nM=D\n%s(l%u)\n", title, labelCount, RETURN_REG,
-    code, labelCount);
+	check_error(bufSize > 0, "Buffer is too small");
+
+	snprintf(buf, bufSize, "%s@l%u\nD=A\n@%s\nM=D\n%s(l%u)\n", 
+    title, labelCount, RETURN_REG, code, labelCount);
   labelCount++;
 	return 0;
 error:
@@ -98,18 +118,24 @@ error:
 
 ///////////////////////////////////////////////////////////////////////////////
 int writeOr(Command_t* currentCommand){
-	check_error(currentCommand->arg1 == A1_NONE, "OR should not have arguments");
-  returnWrap(currentCommand, "// Or\n", "@or\n0;JMP\n");
-	return 0;
+  check_error(currentCommand->arg1 == A1_NONE, "OR should not have arguments");
+  returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, 
+    "// Or\n", "@or\n0;JMP\n");
+  return 0;
 error:
-	return 1;
+  return 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 int writeEqual(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "EQ should not have arguments");
+  char buf1[100] = "";
+  returnWrap(buf1, sizeof(buf1)-1, "// Equal\n", "@sub\n0;JMP\n");
+  char buf2[100] = "";
+  returnWrap(buf2, sizeof(buf2)-1, 
+    "", "@SP\nM=M-1\nA=M\nD=M\n@pushTrue\nD;JEQ\n@pushFalse\n0;JMP\n");
 	snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-		"// EQ\n@l%u // Auto-generated label\nD=A\n", labelCount++);
+		"%s%s", buf1, buf2);
 	return 0;
 error:
 	return 1;
@@ -118,7 +144,8 @@ error:
 ///////////////////////////////////////////////////////////////////////////////
 int writeAnd(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "AND should not have arguments");
-  returnWrap(currentCommand, "// And\n", "@and\n0;JMP\n");
+  returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, 
+    "// And\n", "@and\n0;JMP\n");
 	return 0;
 error:
 	return 1;
@@ -127,8 +154,8 @@ error:
 ///////////////////////////////////////////////////////////////////////////////
 int writeNot(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "NOT should not have arguments");
-	strcpy(currentCommand->asmLine,
-		"// not\n@SP\nM=M-1\nA=M\nM=!M\n@SP\nM=M+1\n");
+  returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, 
+    "// Not\n", "@not\n0;JMP\n");
 	return 0;
 error:
 	return 1;
@@ -137,8 +164,8 @@ error:
 ///////////////////////////////////////////////////////////////////////////////
 int writeNeg(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "NEG should not have arguments");
-	strcpy(currentCommand->asmLine,
-		"// negate\n@SP\nM=M-1\nA=M\nM=-M\n@SP\nM=M+1\n");
+  returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, 
+    "// Negate\n", "@neg\n0;JMP\n");
 	return 0;
 error:
 	return 1;
@@ -147,8 +174,8 @@ error:
 ///////////////////////////////////////////////////////////////////////////////
 int writeAdd(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "ADD should not have arguments");
-	strcpy(currentCommand->asmLine,
-		"// add\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M+D\n@SP\nM=M+1\n");
+  returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, 
+    "// Add\n", "@add\n0;JMP\n");
 	return 0;
 error:
 	return 1;
@@ -157,8 +184,8 @@ error:
 ///////////////////////////////////////////////////////////////////////////////
 int writeSub(Command_t* currentCommand){
 	check_error(currentCommand->arg1 == A1_NONE, "SUB should not have arguments");
-	strcpy(currentCommand->asmLine,
-		"// subtract\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M-D\n@SP\nM=M+1\n");
+  returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, 
+    "// Subtract\n", "@sub\n0;JMP\n");
 	return 0;
 error:
 	return 1;
@@ -178,10 +205,12 @@ int writePush(Command_t* currentCommand){
 			break;
 		case A1_CONSTANT:
 			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
-			char str[100] = "";
-			sprintf(str, "// push constant %d\n@%d\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
-				currentCommand->arg2, currentCommand->arg2);
-			strcpy(currentCommand->asmLine, str);
+      char buf1[50] = "";
+      snprintf(buf1, sizeof(buf1)-1, "// Push constant %u\n", currentCommand->arg2);
+      char buf2[50] = "";
+      snprintf(buf2, sizeof(buf2)-1, "@%u\nD=A\n@%s\nM=D\n@push\n0;JMP\n", 
+        currentCommand->arg2, PUSH_REG);
+      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
 			break;
 		case A1_THIS:
 			check_error(false, "Invalid arg1 for PUSH");
