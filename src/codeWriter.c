@@ -7,6 +7,7 @@
 
 #define RETURN_REG  "R13"
 #define PUSH_REG    "R14"
+#define POP_REG     "R14"
 #define RETURN(X)   "@" X "\nA=M;JMP\n"
 #define PUSH(X)     "(push)\n@" X "\nA=M\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
 
@@ -43,6 +44,7 @@ int writeNeg(Command_t* currentCommand);
 int writeNot(Command_t* currentCommand);
 int writeAnd(Command_t* currentCommand);
 int writeOr(Command_t* currentCommand);
+int writePop(Command_t* currentCommand);
 int writePush(Command_t* currentCommand);
 int writeEqual(Command_t* currentCommand);
 int writeLessThan(Command_t* currentCommand);
@@ -65,6 +67,7 @@ int initAsm(FILE* asmFile){
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_SUB], RETURN(RETURN_REG));
   fprintf(asmFile, "%s%s\n", PUSH(PUSH_REG), RETURN(RETURN_REG));
   fprintf(asmFile, "(programStart)\n");
+  fprintf(asmFile, "// Init LCL (temp)\n@300\nD=A\n@LCL\nM=D\n"); //TODO:temp
   fprintf(asmFile, "\n// Program Code /////////\n");
 	return 0;
 }
@@ -88,7 +91,7 @@ int translate(Command_t* currentCommand){
 		case C_OR: currentCommand->translator = writeOr; break;
 		case C_NOT: currentCommand->translator = writeNot; break;
 		case C_PUSH: currentCommand->translator = writePush; break;
-		case C_POP: check_error(false, "Invalid VM command found"); break;
+		case C_POP: currentCommand->translator = writePop; break;
 		case C_LABEL: check_error(false, "Invalid VM command found"); break;
 		case C_GOTO: check_error(false, "Invalid VM command found"); break;
 		case C_IF: check_error(false, "Invalid VM command found"); break;
@@ -220,18 +223,68 @@ error:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+int writePop(Command_t* currentCommand){
+	switch (currentCommand->arg1){
+		case A1_ARGUMENT:
+			check_error(false, "Invalid arg1 for POP");
+			break;
+		case A1_LOCAL:
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
+      snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
+        "// Pop local %u\n@%u\nD=A\n@LCL\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
+			break;
+    }
+		case A1_STATIC:
+			check_error(false, "Invalid arg1 for POP");
+			break;
+		case A1_THIS:
+			check_error(false, "Invalid arg1 for POP");
+			break;
+		case A1_THAT:
+			check_error(false, "Invalid arg1 for POP");
+			break;
+		case A1_POINTER:
+			check_error(false, "Invalid arg1 for POP");
+			break;
+		case A1_TEMP:
+			check_error(false, "Invalid arg1 for POP");
+			break;
+		case A1_LOOP:
+			check_error(false, "Invalid arg1 for POP");
+			break;
+		default:
+			check_error(false, "Invalid arg1 for POP");
+	}
+	return 0;
+error:
+	return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int writePush(Command_t* currentCommand){
 	switch (currentCommand->arg1){
 		case A1_ARGUMENT:
 			check_error(false, "Invalid arg1 for PUSH");
 			break;
 		case A1_LOCAL:
-			check_error(false, "Invalid arg1 for PUSH");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
+      char buf1[50] = "";
+      snprintf(buf1, sizeof(buf1)-1, "// Push local %u\n", currentCommand->arg2);
+      char buf2[50] = "";
+      snprintf(buf2, sizeof(buf2)-1, 
+        "@%u\nD=A\n@LCL\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
+        currentCommand->arg2, PUSH_REG);
+      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
 			break;
+    }
 		case A1_STATIC:
 			check_error(false, "Invalid arg1 for PUSH");
 			break;
 		case A1_CONSTANT:
+    {
 			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
       char buf1[50] = "";
       snprintf(buf1, sizeof(buf1)-1, "// Push constant %u\n", currentCommand->arg2);
@@ -240,6 +293,7 @@ int writePush(Command_t* currentCommand){
         currentCommand->arg2, PUSH_REG);
       returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
 			break;
+    }
 		case A1_THIS:
 			check_error(false, "Invalid arg1 for PUSH");
 			break;

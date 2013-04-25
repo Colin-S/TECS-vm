@@ -117,31 +117,31 @@ A=M;JMP
 (programStart)
 
 // Program Code /////////
-// Push constant 1
+// Push constant 7
 @l0
 D=A
 @R13
 M=D
-@1
+@7
 D=A
 @R14
 M=D
 @push
 0;JMP
 (l0)
-// Push constant 2
+// Push constant 8
 @l1
 D=A
 @R13
 M=D
-@2
+@8
 D=A
 @R14
 M=D
 @push
 0;JMP
 (l1)
-// Eq
+// Add
 @l2
 D=A
 @R13
