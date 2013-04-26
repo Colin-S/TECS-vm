@@ -264,8 +264,13 @@ int writePop(Command_t* currentCommand){
 			break;
     }
 		case A1_POINTER:
-			check_error(false, "Invalid arg1 for POP");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
+      snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
+        "// Pop pointer %u\n@%u\nD=A\n@THIS\nD=A+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
 			break;
+    }
 		case A1_TEMP:
 			check_error(false, "Invalid arg1 for POP");
 			break;
@@ -346,8 +351,17 @@ int writePush(Command_t* currentCommand){
 			break;
     }
 		case A1_POINTER:
-			check_error(false, "Invalid arg1 for PUSH");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
+      char buf1[50] = "";
+      snprintf(buf1, sizeof(buf1)-1, "// Push pointer %u\n", currentCommand->arg2);
+      char buf2[50] = "";
+      snprintf(buf2, sizeof(buf2)-1, 
+        "@%u\nD=A\n@THIS\nA=A+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
+        currentCommand->arg2, PUSH_REG);
+      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
 			break;
+    }
 		case A1_TEMP:
 			check_error(false, "Invalid arg1 for PUSH");
 			break;

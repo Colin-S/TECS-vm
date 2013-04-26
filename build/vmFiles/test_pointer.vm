@@ -1,0 +1,7 @@
+push constant 7
+push constant 9
+pop pointer 0
+pop pointer 1
+push pointer 0
+push pointer 1
+
