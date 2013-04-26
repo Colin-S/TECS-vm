@@ -49,6 +49,7 @@ int writePush(Command_t* currentCommand);
 int writeEqual(Command_t* currentCommand);
 int writeLessThan(Command_t* currentCommand);
 int writeGreaterThan(Command_t* currentCommand);
+int buildPush(Command_t* currentCommand, const char* arg1String, const char* commandString);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Store commands at the top of the file, for easy reuse
@@ -307,79 +308,32 @@ error:
 int writePush(Command_t* currentCommand){
 	switch (currentCommand->arg1){
 		case A1_ARGUMENT:
-    {
-			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
-      char buf1[50] = "";
-      snprintf(buf1, sizeof(buf1)-1, "// Push argument %u\n", currentCommand->arg2);
-      char buf2[50] = "";
-      snprintf(buf2, sizeof(buf2)-1, 
-        "@%u\nD=A\n@ARG\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
-        currentCommand->arg2, PUSH_REG);
-      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
+      buildPush(currentCommand, "argument", 
+        "@%u\nD=A\n@ARG\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n");
 			break;
-    }
 		case A1_LOCAL:
-    {
-			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
-      char buf1[50] = "";
-      snprintf(buf1, sizeof(buf1)-1, "// Push local %u\n", currentCommand->arg2);
-      char buf2[50] = "";
-      snprintf(buf2, sizeof(buf2)-1, 
-        "@%u\nD=A\n@LCL\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
-        currentCommand->arg2, PUSH_REG);
-      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
+      buildPush(currentCommand, "local", 
+        "@%u\nD=A\n@LCL\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n");
 			break;
-    }
 		case A1_STATIC:
 			check_error(false, "Invalid arg1 for PUSH");
 			break;
 		case A1_CONSTANT:
-    {
-			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
-      char buf1[50] = "";
-      snprintf(buf1, sizeof(buf1)-1, "// Push constant %u\n", currentCommand->arg2);
-      char buf2[50] = "";
-      snprintf(buf2, sizeof(buf2)-1, "@%u\nD=A\n@%s\nM=D\n@push\n0;JMP\n", 
-        currentCommand->arg2, PUSH_REG);
-      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
+      buildPush(currentCommand, "constant", 
+        "@%u\nD=A\n@%s\nM=D\n@push\n0;JMP\n");
 			break;
-    }
 		case A1_THIS:
-    {
-			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
-      char buf1[50] = "";
-      snprintf(buf1, sizeof(buf1)-1, "// Push this %u\n", currentCommand->arg2);
-      char buf2[50] = "";
-      snprintf(buf2, sizeof(buf2)-1, 
-        "@%u\nD=A\n@THIS\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
-        currentCommand->arg2, PUSH_REG);
-      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
+      buildPush(currentCommand, "this", 
+        "@%u\nD=A\n@THIS\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n");
 			break;
-    }
 		case A1_THAT:
-    {
-			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
-      char buf1[50] = "";
-      snprintf(buf1, sizeof(buf1)-1, "// Push that %u\n", currentCommand->arg2);
-      char buf2[50] = "";
-      snprintf(buf2, sizeof(buf2)-1, 
-        "@%u\nD=A\n@THAT\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
-        currentCommand->arg2, PUSH_REG);
-      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
+      buildPush(currentCommand, "that", 
+        "@%u\nD=A\n@THAT\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n");
 			break;
-    }
 		case A1_POINTER:
-    {
-			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
-      char buf1[50] = "";
-      snprintf(buf1, sizeof(buf1)-1, "// Push pointer %u\n", currentCommand->arg2);
-      char buf2[50] = "";
-      snprintf(buf2, sizeof(buf2)-1, 
-        "@%u\nD=A\n@THIS\nA=A+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
-        currentCommand->arg2, PUSH_REG);
-      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
+      buildPush(currentCommand, "pointer", 
+          "@%u\nD=A\n@THIS\nA=A+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n");
 			break;
-    }
 		case A1_TEMP:
       buildPush(currentCommand, "temp", 
           "@%u\nD=A\n@R5\nA=A+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n");
