@@ -1,0 +1,9 @@
+push constant 1
+push constant 28
+gt
+// Top of stack = 0
+
+push constant 1
+push constant 0
+gt
+// Top of stack = -1

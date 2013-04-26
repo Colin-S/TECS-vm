@@ -1,0 +1,6 @@
+push constant 7
+push constant 9
+pop argument 0
+pop argument 1
+push argument 0
+push argument 1

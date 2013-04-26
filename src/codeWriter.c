@@ -68,6 +68,9 @@ int initAsm(FILE* asmFile){
   fprintf(asmFile, "%s%s\n", PUSH(PUSH_REG), RETURN(RETURN_REG));
   fprintf(asmFile, "(programStart)\n");
   fprintf(asmFile, "// Init LCL (temp)\n@300\nD=A\n@LCL\nM=D\n"); //TODO:temp
+  fprintf(asmFile, "// Init ARG (temp)\n@400\nD=A\n@ARG\nM=D\n"); //TODO:temp
+  fprintf(asmFile, "// Init THIS (temp)\n@3000\nD=A\n@THIS\nM=D\n"); //TODO:temp
+  fprintf(asmFile, "// Init THAT (temp)\n@3010\nD=A\n@THAT\nM=D\n"); //TODO:temp
   fprintf(asmFile, "\n// Program Code /////////\n");
 	return 0;
 }
@@ -226,8 +229,13 @@ error:
 int writePop(Command_t* currentCommand){
 	switch (currentCommand->arg1){
 		case A1_ARGUMENT:
-			check_error(false, "Invalid arg1 for POP");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
+      snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
+        "// Pop argument %u\n@%u\nD=A\n@ARG\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
 			break;
+    }
 		case A1_LOCAL:
     {
 			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
@@ -240,11 +248,21 @@ int writePop(Command_t* currentCommand){
 			check_error(false, "Invalid arg1 for POP");
 			break;
 		case A1_THIS:
-			check_error(false, "Invalid arg1 for POP");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
+      snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
+        "// Pop this %u\n@%u\nD=A\n@THIS\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
 			break;
+    }
 		case A1_THAT:
-			check_error(false, "Invalid arg1 for POP");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
+      snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
+        "// Pop that %u\n@%u\nD=A\n@THAT\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
 			break;
+    }
 		case A1_POINTER:
 			check_error(false, "Invalid arg1 for POP");
 			break;
@@ -266,8 +284,17 @@ error:
 int writePush(Command_t* currentCommand){
 	switch (currentCommand->arg1){
 		case A1_ARGUMENT:
-			check_error(false, "Invalid arg1 for PUSH");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
+      char buf1[50] = "";
+      snprintf(buf1, sizeof(buf1)-1, "// Push argument %u\n", currentCommand->arg2);
+      char buf2[50] = "";
+      snprintf(buf2, sizeof(buf2)-1, 
+        "@%u\nD=A\n@ARG\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
+        currentCommand->arg2, PUSH_REG);
+      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
 			break;
+    }
 		case A1_LOCAL:
     {
 			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
@@ -295,11 +322,29 @@ int writePush(Command_t* currentCommand){
 			break;
     }
 		case A1_THIS:
-			check_error(false, "Invalid arg1 for PUSH");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
+      char buf1[50] = "";
+      snprintf(buf1, sizeof(buf1)-1, "// Push this %u\n", currentCommand->arg2);
+      char buf2[50] = "";
+      snprintf(buf2, sizeof(buf2)-1, 
+        "@%u\nD=A\n@THIS\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
+        currentCommand->arg2, PUSH_REG);
+      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
 			break;
+    }
 		case A1_THAT:
-			check_error(false, "Invalid arg1 for PUSH");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
+      char buf1[50] = "";
+      snprintf(buf1, sizeof(buf1)-1, "// Push that %u\n", currentCommand->arg2);
+      char buf2[50] = "";
+      snprintf(buf2, sizeof(buf2)-1, 
+        "@%u\nD=A\n@THAT\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
+        currentCommand->arg2, PUSH_REG);
+      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
 			break;
+    }
 		case A1_POINTER:
 			check_error(false, "Invalid arg1 for PUSH");
 			break;

@@ -1,0 +1,6 @@
+push constant 1
+push constant 32767
+pop this 0
+pop that 1
+push this 0
+push that 1
