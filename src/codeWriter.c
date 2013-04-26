@@ -243,8 +243,13 @@ int writePop(Command_t* currentCommand){
 			break;
     }
 		case A1_STATIC:
-			check_error(false, "Invalid arg1 for POP");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
+      snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
+        "// Pop static %u\n@SP\nAM=M-1\nD=M\n@%s.%u\nM=D\n",
+        currentCommand->arg2, currentCommand->filePrefix, currentCommand->arg2);
 			break;
+    }
 		case A1_THIS:
     {
 			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
@@ -313,8 +318,16 @@ int writePush(Command_t* currentCommand){
         "@%u\nD=A\n@LCL\nA=M+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n");
 			break;
 		case A1_STATIC:
-			check_error(false, "Invalid arg1 for PUSH");
-			break;
+    {
+      check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
+      char buf1[50] = "";
+      snprintf(buf1, sizeof(buf1)-1, "// Push static %u\n", currentCommand->arg2);
+      char buf2[50] = "";
+      snprintf(buf2, sizeof(buf2)-1, "@%s.%u\nD=M\n@%s\nM=D\n@push\n0;JMP\n", 
+        currentCommand->filePrefix, currentCommand->arg2, PUSH_REG);
+      returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
+      break;
+    }
 		case A1_CONSTANT:
       buildPush(currentCommand, "constant", 
         "@%u\nD=A\n@%s\nM=D\n@push\n0;JMP\n");
