@@ -63,6 +63,8 @@ struct command_type{
 	Arg2_t arg2;
 	int (*translator)(Command_t*);
 	int lineCount;
+  char filePrefix[MAX_FILE_LENGTH];
+  size_t maxPrefixSize;
 	char asmLine[MAX_LINE_SIZE];
   size_t maxLineSize;
 };

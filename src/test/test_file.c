@@ -13,7 +13,7 @@ int test_examineFile(){
 	char* fileName = "test.vm";
 	int argc = 1;
 	char* argv[] = {"./vm", fileName};
-	FileInfo_t fileInfo = {"", "", MAX_FILE_LENGTH};
+	FileInfo_t fileInfo = {"", "", "", MAX_FILE_LENGTH};
 
 	// Verify detection of incorrect number of arguments to the program
 	test(examineFile(argc, argv, &fileInfo) == FAIL, "Failed argc check, argc: %d", argc);
@@ -26,6 +26,10 @@ int test_examineFile(){
 	test(strcmp(fileInfo.asmFileName, "test.asm") == 0, "Wrong file name: %s, correct: test.asm",
 		fileInfo.asmFileName);
 
+	// Verify prefix is correct
+	test(strcmp(fileInfo.filePrefix, "test") == 0, "Wrong prefix name: %s, correct: test",
+		fileInfo.filePrefix);
+
 	return 0;
 error:
 	return 1;
@@ -33,7 +37,7 @@ error:
 
 int test_getFileName(){
 	debug("== Testing getFileName() ==");
-	FileInfo_t fileInfo = {"", "", MAX_FILE_LENGTH};
+	FileInfo_t fileInfo = {"", "", "", MAX_FILE_LENGTH};
 	char inFile[] = "abcdecfghijklmnopqrstuvwx.vm";
 	char fileName[] = "abcdecfghijklmnopqrstuvwx";
 

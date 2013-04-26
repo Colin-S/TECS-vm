@@ -13,8 +13,8 @@ int examineFile(int argc, char** argv, FileInfo_t* fileInfo){
 
 	// Create asm file
 	snprintf(fileInfo->vmFileName, fileInfo->maxLength, "%s", argv[1]);
-	getFileName(fileInfo->vmFileName, fileInfo->asmFileName, fileInfo->maxLength-4);
-	strcat(fileInfo->asmFileName, ".asm");
+	getFileName(fileInfo->vmFileName, fileInfo->filePrefix, fileInfo->maxLength);
+	snprintf(fileInfo->asmFileName, fileInfo->maxLength, "%s.asm", fileInfo->filePrefix);
 
 	FILE* pFile = fopen(fileInfo->asmFileName, "w");
 	check_error(pFile != NULL, "Failed to create .asm file");

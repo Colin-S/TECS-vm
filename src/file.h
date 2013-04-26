@@ -7,6 +7,7 @@ enum {
 
 typedef struct {
 	char asmFileName[MAX_FILE_LENGTH];
+  char filePrefix[MAX_FILE_LENGTH];
 	char vmFileName[MAX_FILE_LENGTH];
 	int maxLength;
 } FileInfo_t;

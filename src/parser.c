@@ -35,8 +35,13 @@ int advance(FileInfo_t* fileInfo){
 			continue;
 		strcpy(tempLine, lineIn);
 
+    // Manage information for the current line of VM code
+		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, NULL, 
+      lineCount, "", MAX_FILE_LENGTH, "", MAX_LINE_SIZE};
+    snprintf(currentCommand.filePrefix, currentCommand.maxPrefixSize, 
+        "%s", fileInfo->filePrefix);
+
 		// Tokenize the current line
-		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, NULL, lineCount, "", MAX_LINE_SIZE};
 		ret = commandType(lineIn, &currentCommand);
 		check_error(ret == 0, "Failed to parse line: %s", lineIn);
 
@@ -55,6 +60,8 @@ int advance(FileInfo_t* fileInfo){
 	fclose(asmFile);
 	return 0;
 error:
+	fclose(vmFile);
+	fclose(asmFile);
 	printf("[ERROR] %s:%d:\"%s\"\n", fileInfo->vmFileName, lineCount, tempLine);
 	return 1;
 }

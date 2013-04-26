@@ -80,9 +80,6 @@ static uint32_t labelCount = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 int translate(Command_t* currentCommand){
-	//TODO: this function should assign a function pointer to
-	//		the correct translation function
-	//		should use separate function for EVERY SINGLE command
 	// Which command is it?
 	switch (currentCommand->command){
 		case C_ADD: currentCommand->translator = writeAdd; break;
