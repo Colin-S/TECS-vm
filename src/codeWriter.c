@@ -272,14 +272,32 @@ int writePop(Command_t* currentCommand){
 			break;
     }
 		case A1_TEMP:
-			check_error(false, "Invalid arg1 for POP");
+    {
+			check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
+      snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
+        "// Pop temp %u\n@%u\nD=A\n@R5\nD=A+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
 			break;
+    }
 		case A1_LOOP:
 			check_error(false, "Invalid arg1 for POP");
 			break;
 		default:
 			check_error(false, "Invalid arg1 for POP");
 	}
+	return 0;
+error:
+	return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int buildPush(Command_t* currentCommand, const char* arg1String, const char* commandString){
+  check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for PUSH");
+  char buf1[50] = "";
+  snprintf(buf1, sizeof(buf1)-1, "// Push %s %u\n", arg1String, currentCommand->arg2);
+  char buf2[50] = "";
+  snprintf(buf2, sizeof(buf2)-1, commandString, currentCommand->arg2, PUSH_REG);
+  returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, buf1, buf2);
 	return 0;
 error:
 	return 1;
@@ -363,7 +381,8 @@ int writePush(Command_t* currentCommand){
 			break;
     }
 		case A1_TEMP:
-			check_error(false, "Invalid arg1 for PUSH");
+      buildPush(currentCommand, "temp", 
+          "@%u\nD=A\n@R5\nA=A+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n");
 			break;
 		case A1_LOOP:
 			check_error(false, "Invalid arg1 for PUSH");
