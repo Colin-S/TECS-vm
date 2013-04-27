@@ -69,10 +69,10 @@ int initAsm(FILE* asmFile){
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_SUB], RETURN(RETURN_REG));
   fprintf(asmFile, "%s%s\n", PUSH(PUSH_REG), RETURN(RETURN_REG));
   fprintf(asmFile, "(programStart)\n");
-  fprintf(asmFile, "// Init LCL (temp)\n@300\nD=A\n@LCL\nM=D\n"); //TODO:temp
-  fprintf(asmFile, "// Init ARG (temp)\n@400\nD=A\n@ARG\nM=D\n"); //TODO:temp
-  fprintf(asmFile, "// Init THIS (temp)\n@3000\nD=A\n@THIS\nM=D\n"); //TODO:temp
-  fprintf(asmFile, "// Init THAT (temp)\n@3010\nD=A\n@THAT\nM=D\n"); //TODO:temp
+//  fprintf(asmFile, "// Init LCL (temp)\n@300\nD=A\n@LCL\nM=D\n"); //TODO:temp
+//  fprintf(asmFile, "// Init ARG (temp)\n@400\nD=A\n@ARG\nM=D\n"); //TODO:temp
+//  fprintf(asmFile, "// Init THIS (temp)\n@3000\nD=A\n@THIS\nM=D\n"); //TODO:temp
+//  fprintf(asmFile, "// Init THAT (temp)\n@3010\nD=A\n@THAT\nM=D\n"); //TODO:temp
   fprintf(asmFile, "\n// Program Code /////////\n");
   return 0;
 }
@@ -108,10 +108,10 @@ error:
 
 ///////////////////////////////////////////////////////////////////////////////
 int writeLabel(Command_t* currentCommand){
-  check_error(currentCommand->arg1 != A1_NONE, "LABEL should have 1 argument");
-  check_error(currentCommand->arg1 == A1_NONE, "LABEL should have 1 argument");
-  returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// Or\n", "@or\n0;JMP\n");
+  check_error(currentCommand->arg1 == A1_LABEL, "LABEL command with non-label arg1");
+  check_error(currentCommand->arg2 == A2_NONE, "LABEL should have 1 argument");
+  snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
+    "(%s)\n", currentCommand->label);
   return 0;
 error:
   return 1;

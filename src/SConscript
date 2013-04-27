@@ -11,7 +11,7 @@ env = Environment(CCFLAGS = '-g -Wall -O0 -std=c99', CC = 'gcc')
 exe = 'vm'
 #src =  ['file.c', 'parser.c', 'codeWriter.c']
 src =  ['file.c', 'codeWriter.c']
-env.Program(exe, create_objs(src + ['main.c']))
+env.Program(exe, create_objs(src + ['main.c', 'parser.c']))
 
 # Build the test program
 testExe = 'test/vmTest'
