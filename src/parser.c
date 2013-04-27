@@ -121,10 +121,23 @@ error:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+VmCommand_t labelCommands[] = {
+  C_LABEL,
+  C_GOTO,
+  C_IF,
+  C_FUNCTION
+};
+
+///////////////////////////////////////////////////////////////////////////////
 static int getLabel(Command_t* currentCommand, char* arg){
-  check_error(((currentCommand->command == C_LABEL) || 
-               (currentCommand->command == C_GOTO)  ||
-               (currentCommand->command == C_IF)), "Invalid arg1 for current command");
+  bool labelAllowed = false;
+  VmCommand_t command = currentCommand->command;
+  for (size_t i = 0; i < sizeof(labelCommands); ++i){
+    if (labelCommands[i] == command){
+      labelAllowed = true;
+    }
+  }
+  check_error(labelAllowed == true, "Invalid arg1 for current command");
   snprintf(currentCommand->label, currentCommand->maxLineSize, "%s", arg);
   return A1_LABEL;
 error:
