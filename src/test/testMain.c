@@ -4,14 +4,14 @@
 #include "../util.h"
 
 int main(){
-	debug("== Start Unit Testing ==");
-	test_examineFile();
-	test_getFileName();
-	test_cleanLine();
-	test_cleanLine2();
-	test_commandTypeCheck();
-	test_arg1();
-	test_arg2();
+  debug("== Start Unit Testing ==");
+  test_examineFile();
+  test_getFileName();
+  test_cleanLine();
+  test_cleanLine2();
+  test_commandTypeCheck();
+  test_arg1();
+  test_arg2();
 
-	return 0;
+  return 0;
 }

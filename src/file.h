@@ -6,10 +6,10 @@ enum {
 };
 
 typedef struct {
-	char asmFileName[MAX_FILE_LENGTH];
+  char asmFileName[MAX_FILE_LENGTH];
   char filePrefix[MAX_FILE_LENGTH];
-	char vmFileName[MAX_FILE_LENGTH];
-	int maxLength;
+  char vmFileName[MAX_FILE_LENGTH];
+  int maxLength;
 } FileInfo_t;
 
 int examineFile(int argc, char** argv, FileInfo_t* fileInfo);
