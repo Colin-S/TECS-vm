@@ -112,7 +112,7 @@ static int arg1(Command_t* currentCommand, char* arg){
   if (strcmp(arg, "that") == 0) return A1_THAT;
   if (strcmp(arg, "pointer") == 0) return A1_POINTER;
   if (strcmp(arg, "temp") == 0) return A1_TEMP;
-  if (strcmp(arg, "loop") == 0) return A1_LOOP;
+  //if (strcmp(arg, "loop") == 0) return A1_LOOP;
 
   check_error_silent(getLabel(currentCommand, arg) == A1_LABEL);
   return A1_LABEL;
@@ -122,7 +122,9 @@ error:
 
 ///////////////////////////////////////////////////////////////////////////////
 static int getLabel(Command_t* currentCommand, char* arg){
-  check_error(currentCommand->command == C_LABEL, "Incorrect arg1 for current command");
+  check_error(((currentCommand->command == C_LABEL) || 
+               (currentCommand->command == C_GOTO)  ||
+               (currentCommand->command == C_IF)), "Invalid arg1 for current command");
   snprintf(currentCommand->label, currentCommand->maxLineSize, "%s", arg);
   return A1_LABEL;
 error:

@@ -45,7 +45,7 @@ typedef enum {
   A1_THAT,
   A1_POINTER,
   A1_TEMP,
-  A1_LOOP, //TODO: what is this for?
+  //A1_LOOP, //TODO: what is this for?
   A1_LABEL
 } Arg1_t;
 

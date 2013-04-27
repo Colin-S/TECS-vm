@@ -51,6 +51,8 @@ int writeLessThan(Command_t* currentCommand);
 int writeGreaterThan(Command_t* currentCommand);
 int buildPush(Command_t* currentCommand, const char* arg1String, const char* commandString);
 int writeLabel(Command_t* currentCommand);
+int writeGoto(Command_t* currentCommand);
+int writeIfGoto(Command_t* currentCommand);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Store commands at the top of the file, for easy reuse
@@ -95,12 +97,36 @@ int translate(Command_t* currentCommand){
     case C_PUSH: currentCommand->translator = writePush; break;
     case C_POP: currentCommand->translator = writePop; break;
     case C_LABEL: currentCommand->translator = writeLabel; break;
-    case C_GOTO: check_error(false, "Invalid VM command found"); break;
-    case C_IF: check_error(false, "Invalid VM command found"); break;
+    case C_GOTO: currentCommand->translator = writeGoto; break;
+    case C_IF: currentCommand->translator = writeIfGoto; break;
     case C_FUNCTION: check_error(false, "Invalid VM command found"); break;
     case C_RETURN: check_error(false, "Invalid VM command found"); break;
     case C_CALL: check_error(false, "Invalid VM command found"); break;
     default: check_error(false, "Invalid VM command found"); }
+  return 0;
+error:
+  return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int writeIfGoto(Command_t* currentCommand){
+  check_error(currentCommand->arg1 == A1_LABEL, "IF-GOTO command with non-label arg1");
+  check_error(currentCommand->arg2 == A2_NONE, "IF-GOTO should have 1 argument");
+  snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
+    "// if-goto %s\n@SP\nAM=M-1\nD=M\n@%s\nD;JGT\nD;JLT\n", 
+    currentCommand->label, currentCommand->label);
+  return 0;
+error:
+  return 1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+int writeGoto(Command_t* currentCommand){
+  check_error(currentCommand->arg1 == A1_LABEL, "GOTO command with non-label arg1");
+  check_error(currentCommand->arg2 == A2_NONE, "GOTO should have 1 argument");
+  snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
+    "// goto\n@%s\n0;JMP\n", currentCommand->label);
   return 0;
 error:
   return 1;
@@ -294,9 +320,10 @@ int writePop(Command_t* currentCommand){
         currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
       break;
     }
-    case A1_LOOP:
-      check_error(false, "Invalid arg1 for POP");
-      break;
+//    case A1_LOOP:
+//      check_error(false, "Invalid arg1 for POP");
+//      break;
+    //TODO
     default:
       check_error(false, "Invalid arg1 for POP");
   }
@@ -360,9 +387,10 @@ int writePush(Command_t* currentCommand){
       buildPush(currentCommand, "temp", 
           "@%u\nD=A\n@R5\nA=A+D\nD=M\n@%s\nM=D\n@push\n0;JMP\n");
       break;
-    case A1_LOOP:
-      check_error(false, "Invalid arg1 for PUSH");
-      break;
+//    case A1_LOOP:
+//      check_error(false, "Invalid arg1 for PUSH");
+//      break;
+      //TODO
     default:
       check_error(false, "Invalid arg1 for PUSH");
   }
