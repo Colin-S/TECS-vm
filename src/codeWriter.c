@@ -50,6 +50,7 @@ int writeEqual(Command_t* currentCommand);
 int writeLessThan(Command_t* currentCommand);
 int writeGreaterThan(Command_t* currentCommand);
 int buildPush(Command_t* currentCommand, const char* arg1String, const char* commandString);
+int writeLabel(Command_t* currentCommand);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Store commands at the top of the file, for easy reuse
@@ -93,7 +94,7 @@ int translate(Command_t* currentCommand){
 		case C_NOT: currentCommand->translator = writeNot; break;
 		case C_PUSH: currentCommand->translator = writePush; break;
 		case C_POP: currentCommand->translator = writePop; break;
-		case C_LABEL: check_error(false, "Invalid VM command found"); break;
+		case C_LABEL: currentCommand->translator = writeLabel; break;
 		case C_GOTO: check_error(false, "Invalid VM command found"); break;
 		case C_IF: check_error(false, "Invalid VM command found"); break;
 		case C_FUNCTION: check_error(false, "Invalid VM command found"); break;
@@ -103,6 +104,17 @@ int translate(Command_t* currentCommand){
 	return 0;
 error:
 	return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int writeLabel(Command_t* currentCommand){
+  check_error(currentCommand->arg1 != A1_NONE, "LABEL should have 1 argument");
+  check_error(currentCommand->arg1 == A1_NONE, "LABEL should have 1 argument");
+  returnWrap(currentCommand->asmLine, currentCommand->maxLineSize, 
+    "// Or\n", "@or\n0;JMP\n");
+  return 0;
+error:
+  return 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,11 +1,13 @@
-#include "../parser.h"
 #include "../util.h"
+#include "../parser.h"
+#include "../parser.c"
 
 enum {
 	PASS = 0,
 	FAIL = 1
 };
 
+///////////////////////////////////////////////////////////////////////////////
 int test_cleanLine(){
 	debug("== Testing cleanLine() ==");
 
@@ -50,6 +52,7 @@ error:
 	return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int test_cleanLine2(){
 	debug("== Testing cleanLine2() ==");
 
@@ -101,6 +104,7 @@ error:
 	return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int test_commandTypeCheck(){
 	debug("== Testing commandTypeCheck() ==");
 	test(commandTypeCheck("add") == C_ADD, "Failed add");
@@ -129,26 +133,37 @@ error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int test_arg1(){
 	debug("== Testing arg1() ==");
-	test(arg1("argument") == A1_ARGUMENT, "Failed argument");
-	test(arg1("local") == A1_LOCAL, "Failed local");
-	test(arg1("static") == A1_STATIC, "Failed static");
-	test(arg1("constant") == A1_CONSTANT, "Failed constant");
-	test(arg1("this") == A1_THIS, "Failed this");
-	test(arg1("that") == A1_THAT, "Failed that");
-	test(arg1("pointer") == A1_POINTER, "Failed pointer");
-	test(arg1("temp") == A1_TEMP, "Failed temp");
-	test(arg1("loop") == A1_LOOP, "Failed loop");
-	test(arg1("") == A1_NONE, "Failed empty string");
-	test(arg1(" ") == A1_NONE, "Failed bad string");
-	test(arg1("argument ") == A1_NONE, "Failed bad string");
-	test(arg1(NULL) == A1_NONE, "Failed NULL pointer");
+  Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, "", NULL, 
+    0, "", MAX_FILE_LENGTH, "", MAX_LINE_SIZE};
+	test(arg1(&currentCommand, "argument") == A1_ARGUMENT, "Failed argument");
+	test(arg1(&currentCommand, "local") == A1_LOCAL, "Failed local");
+	test(arg1(&currentCommand, "static") == A1_STATIC, "Failed static");
+	test(arg1(&currentCommand, "constant") == A1_CONSTANT, "Failed constant");
+	test(arg1(&currentCommand, "this") == A1_THIS, "Failed this");
+	test(arg1(&currentCommand, "that") == A1_THAT, "Failed that");
+	test(arg1(&currentCommand, "pointer") == A1_POINTER, "Failed pointer");
+	test(arg1(&currentCommand, "temp") == A1_TEMP, "Failed temp");
+	test(arg1(&currentCommand, "loop") == A1_LOOP, "Failed loop");
+	test(arg1(&currentCommand, "") == A1_NONE, "Failed empty string");
+	test(arg1(&currentCommand, " ") == A1_NONE, "Failed bad string");
+	test(arg1(&currentCommand, "argument ") == A1_NONE, "Failed bad string");
+	test(arg1(&currentCommand, NULL) == A1_NONE, "Failed NULL pointer");
+
+  // Test label commands
+  currentCommand.command = C_LABEL;
+  char* testlabel = "testlabel";
+	test(arg1(&currentCommand, testlabel) == A1_LABEL, "Failed to detect label argument");
+	test(strncmp(currentCommand.label, testlabel, currentCommand.maxLineSize) == 0, 
+    "Failed to store label string");
 	return 0;
 error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 int test_arg2(){
 	debug("== Testing arg2() ==");
 	test(arg2("") == A2_NONE, "Failed empty string");

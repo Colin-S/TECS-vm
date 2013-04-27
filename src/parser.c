@@ -2,13 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include "parser.h"
 #include "file.h"
 #include "util.h"
 #include "codeWriter.h"
 
+static int arg1(Command_t* currentCommand, char* arg);
+static int cleanLine(char* str, int size);
+static int commandType(char* line, Command_t* currentCommand);
+static int commandTypeCheck(char* type);
+static int arg2(char* arg);
+static int getLabel(Command_t* currentCommand, char* arg);
+
+///////////////////////////////////////////////////////////////////////////////
 // Pass both the asm file and the intermediate file into here
 // Get each line from the input vm file
+///////////////////////////////////////////////////////////////////////////////
 int advance(FileInfo_t* fileInfo){
 	debug("asm file: %s, vm file: %s", fileInfo->asmFileName, fileInfo->vmFileName);
 
@@ -36,8 +46,8 @@ int advance(FileInfo_t* fileInfo){
 		strcpy(tempLine, lineIn);
 
     // Manage information for the current line of VM code
-		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, NULL, 
-      lineCount, "", MAX_FILE_LENGTH, "", MAX_LINE_SIZE};
+		Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, "", NULL, 
+      lineCount, "", fileInfo->maxLength, "", MAX_LINE_SIZE};
     snprintf(currentCommand.filePrefix, currentCommand.maxPrefixSize, 
         "%s", fileInfo->filePrefix);
 
@@ -66,8 +76,10 @@ error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 // Examine each line to determine the vm command type
-int commandType(char* line, Command_t* currentCommand){
+///////////////////////////////////////////////////////////////////////////////
+static int commandType(char* line, Command_t* currentCommand){
 	check_error(strlen(line) > 0, "Attempting to parse empty command");
 
 	// Examine each portion of the line
@@ -77,7 +89,7 @@ int commandType(char* line, Command_t* currentCommand){
 
 	// Store command information
 	currentCommand->command = commandTypeCheck(type);
-	currentCommand->arg1 = arg1(argument1);
+	currentCommand->arg1 = arg1(currentCommand, argument1);
 	currentCommand->arg2 = arg2(argument2);
 
 	debug("str[%s, %s, %s] com[%d, %d, %d]", type, argument1, argument2, 
@@ -87,8 +99,10 @@ error:
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 // Interprete the first argument
-int arg1(char* arg){
+///////////////////////////////////////////////////////////////////////////////
+static int arg1(Command_t* currentCommand, char* arg){
 	check_error_silent(arg != NULL);
 	if (strcmp(arg, "argument") == 0) return A1_ARGUMENT;
 	if (strcmp(arg, "local") == 0) return A1_LOCAL;
@@ -99,13 +113,26 @@ int arg1(char* arg){
 	if (strcmp(arg, "pointer") == 0) return A1_POINTER;
 	if (strcmp(arg, "temp") == 0) return A1_TEMP;
 	if (strcmp(arg, "loop") == 0) return A1_LOOP;
-	// TODO: arg1 can also be a label name if command is goto or if-goto
+
+  check_error_silent(getLabel(currentCommand, arg) == A1_LABEL);
+  return A1_LABEL;
 error:
 	return A1_NONE;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+static int getLabel(Command_t* currentCommand, char* arg){
+  check_error(currentCommand->command == C_LABEL, "Incorrect arg1 for current command");
+  snprintf(currentCommand->label, currentCommand->maxLineSize, "%s", arg);
+  return A1_LABEL;
+error:
+  return A1_NONE;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Interprete the second argument
-int arg2(char* arg){
+///////////////////////////////////////////////////////////////////////////////
+static int arg2(char* arg){
 	check_error_silent(arg != NULL);
 
 	// arg2 can only be an integer within a certain range
@@ -119,8 +146,10 @@ error:
 	return A2_NONE;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 // Convert command string to command type
-int commandTypeCheck(char* type){
+///////////////////////////////////////////////////////////////////////////////
+static int commandTypeCheck(char* type){
 	check_error_silent(type != NULL);
 	if (strcmp(type, "add") == 0) return C_ADD;
 	if (strcmp(type, "sub") == 0) return C_SUB;
@@ -139,13 +168,16 @@ int commandTypeCheck(char* type){
 	if (strcmp(type, "function") == 0) return C_FUNCTION;
 	if (strcmp(type, "return") == 0) return C_RETURN;
 	if (strcmp(type, "call") == 0) return C_CALL;
+  check_error(false, "Unknown VM command");
 error:
 	return C_NONE;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 // Remove comments and whitespace from a line of text
 // Returns 1 if either the input line is empty, or the output line is empty
-int cleanLine(char* str, int size){
+///////////////////////////////////////////////////////////////////////////////
+static int cleanLine(char* str, int size){
 	check_error(size < MAX_LINE_SIZE, "VM file line exceeds maximum length");
 	check_error_silent(size > 0);
 

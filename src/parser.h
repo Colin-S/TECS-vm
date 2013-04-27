@@ -45,7 +45,8 @@ typedef enum {
 	A1_THAT,
 	A1_POINTER,
 	A1_TEMP,
-	A1_LOOP,
+	A1_LOOP, //TODO: what is this for?
+  A1_LABEL
 } Arg1_t;
 
 // Argument 2 types
@@ -61,6 +62,7 @@ struct command_type{
 	VmCommand_t command;
 	Arg1_t arg1;
 	Arg2_t arg2;
+  char label[MAX_LINE_SIZE];
 	int (*translator)(Command_t*);
 	int lineCount;
   char filePrefix[MAX_FILE_LENGTH];
@@ -70,10 +72,5 @@ struct command_type{
 };
 
 int advance(FileInfo_t* fileInfo);
-int cleanLine(char* str, int size);
-int commandType(char* line, Command_t* currentCommand);
-int commandTypeCheck(char* type);
-int arg1(char* arg);
-int arg2(char* arg);
 
 #endif
