@@ -7,7 +7,7 @@
 
 // Using enum instead of #define
 enum {
-  MAX_LINE_SIZE = 200,
+  MAX_LINE_SIZE = 500,
   CONST_MIN = 0,
   CONST_MAX = 32767
 };

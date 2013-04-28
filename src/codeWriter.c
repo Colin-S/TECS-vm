@@ -54,13 +54,14 @@ int writeLabel(Command_t* currentCommand);
 int writeGoto(Command_t* currentCommand);
 int writeIfGoto(Command_t* currentCommand);
 int writeFunction(Command_t* currentCommand);
+int writeReturn(Command_t* currentCommand);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Store commands at the top of the file, for easy reuse
 ///////////////////////////////////////////////////////////////////////////////
 int initAsm(FILE* asmFile){
   fprintf(asmFile, "// Init Code ////////////\n");
-  fprintf(asmFile, "%s\n", asmStrings[ASM_INIT_SP]);
+  //fprintf(asmFile, "%s\n", asmStrings[ASM_INIT_SP]);
   fprintf(asmFile, "%s\n", asmStrings[ASM_JMP_TO_START]);
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_PUSH_TRUE], RETURN(RETURN_REG));
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_PUSH_FALSE], RETURN(RETURN_REG));
@@ -101,9 +102,29 @@ int translate(Command_t* currentCommand){
     case C_GOTO: currentCommand->translator = writeGoto; break;
     case C_IF: currentCommand->translator = writeIfGoto; break;
     case C_FUNCTION: currentCommand->translator = writeFunction; break;
-    case C_RETURN: check_error(false, "Invalid VM command found"); break;
+    case C_RETURN: currentCommand->translator = writeReturn; break;
     case C_CALL: check_error(false, "Invalid VM command found"); break;
     default: check_error(false, "Invalid VM command found"); }
+  return 0;
+error:
+  return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int writeReturn(Command_t* currentCommand){
+  check_error(currentCommand->arg1 == A1_NONE, "RETURN should not have arguments");
+  check_error(currentCommand->arg2 == A2_NONE, "RETURN should not have arguments");
+  snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
+    "// Return\n"
+    "@LCL\nD=M\n@R15\nM=D\n"                  // Store LCL
+    "@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nM=D\n"  // *ARG = pop
+    "@ARG\nD=M+1\n@SP\nM=D\n"                 // SP = ARG+1
+    "@1\nD=A\n@R15\nA=M-D\nD=M\n@THAT\nM=D\n" // THAT = *(R15-1)
+    "@2\nD=A\n@R15\nA=M-D\nD=M\n@THIS\nM=D\n" // THIS = *(R15-2)
+    "@3\nD=A\n@R15\nA=M-D\nD=M\n@ARG\nM=D\n"  // ARG = *(R15-3)
+    "@4\nD=A\n@R15\nA=M-D\nD=M\n@LCL\nM=D\n"  // LCL = *(R15-4)
+    "@5\nD=A\n@R15\nA=M-D\nA=M;JMP\n"         // goto *(R15-5)
+    );
   return 0;
 error:
   return 1;
