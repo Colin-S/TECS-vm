@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "test_file.h"
 #include "test_parser.h"
+#include "test_util.h"
 #include "../util.h"
 
 int main(){
@@ -12,6 +13,7 @@ int main(){
   test_commandTypeCheck();
   test_arg1();
   test_arg2();
+  test_binsearch();
 
   return 0;
 }

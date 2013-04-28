@@ -10,12 +10,12 @@ env = Environment(CCFLAGS = '-g -Wall -O0 -std=c99', CC = 'gcc')
 # Build the VM program
 exe = 'vm'
 #src =  ['file.c', 'parser.c', 'codeWriter.c']
-src =  ['file.c', 'codeWriter.c']
+src =  ['file.c', 'codeWriter.c', 'util.c']
 env.Program(exe, create_objs(src + ['main.c', 'parser.c']))
 
 # Build the test program
 testExe = 'test/vmTest'
 testSrc = src + ['test/testMain.c','test/test_file.c', 'test/test_parser.c',
-	'test/test_codeWriter.c']
+	'test/test_codeWriter.c', 'test/test_util.c']
 #SConscript('main.scons', variant_dir = 'test/build', duplicate = 0)
 env.Program(testExe, create_objs(testSrc))

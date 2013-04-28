@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdbool.h>
 
 #ifdef NDEBUG
   #define debug(M, ...)
@@ -25,5 +26,7 @@
   __LINE__, ##__VA_ARGS__)
 
 #define test(A, M, ...) if(!(A)) { test_failure(M, ##__VA_ARGS__); goto error; }
+
+bool binsearch(int v, int* array, size_t sz);
 
 #endif

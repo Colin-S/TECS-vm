@@ -130,13 +130,16 @@ VmCommand_t labelCommands[] = {
 
 ///////////////////////////////////////////////////////////////////////////////
 static int getLabel(Command_t* currentCommand, char* arg){
-  bool labelAllowed = false;
-  VmCommand_t command = currentCommand->command;
-  for (size_t i = 0; i < sizeof(labelCommands); ++i){
-    if (labelCommands[i] == command){
-      labelAllowed = true;
-    }
-  }
+  bool labelAllowed = binsearch(currentCommand->command, labelCommands, 
+    sizeof(labelCommands)/sizeof(VmCommand_t)) ? true : false;
+
+//  VmCommand_t command = currentCommand->command;
+//  
+//  for (size_t i = 0; i < sizeof(labelCommands); ++i){
+//    if (labelCommands[i] == command){
+//      labelAllowed = true;
+//    }
+//  }
   check_error(labelAllowed == true, "Invalid arg1 for current command");
   snprintf(currentCommand->label, currentCommand->maxLineSize, "%s", arg);
   return A1_LABEL;
