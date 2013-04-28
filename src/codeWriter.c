@@ -117,7 +117,7 @@ int writeFunction(Command_t* currentCommand){
   // For each local variable, push 0 onto the stack (init locals to 0)
   size_t locals = currentCommand->arg2;
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "// Function %s %u\n@0\nD=A\n", currentCommand->label, locals);
+    "// Function %s %u\n(%s)\n@0\nD=A\n", currentCommand->label, locals, currentCommand->label);
   for (size_t i = 0; i < locals; ++i){
     strncat(currentCommand->asmLine, "// push 0\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
       currentCommand->maxLineSize);
