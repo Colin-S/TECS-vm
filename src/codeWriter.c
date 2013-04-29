@@ -55,13 +55,14 @@ int writeGoto(Command_t* currentCommand);
 int writeIfGoto(Command_t* currentCommand);
 int writeFunction(Command_t* currentCommand);
 int writeReturn(Command_t* currentCommand);
+int writeCall(Command_t* currentCommand);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Store commands at the top of the file, for easy reuse
 ///////////////////////////////////////////////////////////////////////////////
 int initAsm(FILE* asmFile){
   fprintf(asmFile, "// Init Code ////////////\n");
-  //fprintf(asmFile, "%s\n", asmStrings[ASM_INIT_SP]);
+  fprintf(asmFile, "%s\n", asmStrings[ASM_INIT_SP]);
   fprintf(asmFile, "%s\n", asmStrings[ASM_JMP_TO_START]);
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_PUSH_TRUE], RETURN(RETURN_REG));
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_PUSH_FALSE], RETURN(RETURN_REG));
@@ -73,10 +74,10 @@ int initAsm(FILE* asmFile){
   fprintf(asmFile, "%s%s\n", asmStrings[ASM_SUB], RETURN(RETURN_REG));
   fprintf(asmFile, "%s%s\n", PUSH(PUSH_REG), RETURN(RETURN_REG));
   fprintf(asmFile, "(programStart)\n");
-//  fprintf(asmFile, "// Init LCL (temp)\n@300\nD=A\n@LCL\nM=D\n"); //TODO:temp
-//  fprintf(asmFile, "// Init ARG (temp)\n@400\nD=A\n@ARG\nM=D\n"); //TODO:temp
-//  fprintf(asmFile, "// Init THIS (temp)\n@3000\nD=A\n@THIS\nM=D\n"); //TODO:temp
-//  fprintf(asmFile, "// Init THAT (temp)\n@3010\nD=A\n@THAT\nM=D\n"); //TODO:temp
+  fprintf(asmFile, "// Init LCL (temp)\n@300\nD=A\n@LCL\nM=D\n"); //TODO:temp
+  fprintf(asmFile, "// Init ARG (temp)\n@400\nD=A\n@ARG\nM=D\n"); //TODO:temp
+  fprintf(asmFile, "// Init THIS (temp)\n@3000\nD=A\n@THIS\nM=D\n"); //TODO:temp
+  fprintf(asmFile, "// Init THAT (temp)\n@3010\nD=A\n@THAT\nM=D\n"); //TODO:temp
   fprintf(asmFile, "\n// Program Code /////////\n");
   return 0;
 }
@@ -103,8 +104,30 @@ int translate(Command_t* currentCommand){
     case C_IF: currentCommand->translator = writeIfGoto; break;
     case C_FUNCTION: currentCommand->translator = writeFunction; break;
     case C_RETURN: currentCommand->translator = writeReturn; break;
-    case C_CALL: check_error(false, "Invalid VM command found"); break;
+    case C_CALL: currentCommand->translator = writeCall; break;
     default: check_error(false, "Invalid VM command found"); }
+  return 0;
+error:
+  return 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int writeCall(Command_t* currentCommand){
+  check_error(currentCommand->arg1 == A1_LABEL, "CALL command with non-label arg1");
+  check_error(currentCommand->arg2 != A2_NONE, "CALL should have 2 arguments");
+  snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
+    "// Call %s %u\n"
+    "@call.%s\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"   // push return address
+    "@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"       // push LCL
+    "@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"       // push ARG
+    "@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"      // push THIS
+    "@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"      // push THAT
+    "@5\nD=A\n@%u\nD=D+A\n@SP\nD=M-D\n@ARG\nM=D\n" // ARG = SP-nArgs-5
+    "@SP\nD=M\n@LCL\nM=D\n"                        // LCL = SP
+    "@%s\n0;JMP\n"                                 // goto function
+    "(call.%s)\n"                                  // return address
+    ,currentCommand->label, currentCommand->arg2, currentCommand->label, 
+    currentCommand->arg2, currentCommand->label, currentCommand->label);
   return 0;
 error:
   return 1;
@@ -132,8 +155,8 @@ error:
 
 ///////////////////////////////////////////////////////////////////////////////
 int writeFunction(Command_t* currentCommand){
-  //check_error(currentCommand->arg1 == A1_LABEL, "IF-GOTO command with non-label arg1");
-  check_error(currentCommand->arg2 != A2_NONE, "FUNCTION should have 1 argument");
+  check_error(currentCommand->arg1 == A1_LABEL, "FUNCTION command with non-label arg1");
+  check_error(currentCommand->arg2 != A2_NONE, "FUNCTION should have 2 arguments");
 
   // For each local variable, push 0 onto the stack (init locals to 0)
   size_t locals = currentCommand->arg2;

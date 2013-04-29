@@ -125,7 +125,8 @@ VmCommand_t labelCommands[] = {
   C_LABEL,
   C_GOTO,
   C_IF,
-  C_FUNCTION
+  C_FUNCTION,
+  C_CALL
 };
 
 ///////////////////////////////////////////////////////////////////////////////
