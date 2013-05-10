@@ -1,10 +1,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include "util.h"
 
-////////////////////////////////////////////////////////////
-// Binary search
-////////////////////////////////////////////////////////////
 bool binsearch(int v, int* array, size_t sz){
   //debug("v: %u, array[0]: %d, sz: %u", v, array[0], sz);
 
@@ -20,12 +18,50 @@ bool binsearch(int v, int* array, size_t sz){
 }
 
 ////////////////////////////////////////////////////////////
-// Linked list, for tracking function names 
-//  (used to generate labels of the form functionName$labelName)
-////////////////////////////////////////////////////////////
-struct llNode {
+enum {
+  MAX_LL_STRING = 100
 };
 
-static llNode* llHead;
+struct llNode {
+  char str[MAX_LL_STRING];
+  struct llNode* next;
+};
 
-llNode* llHead
+static struct llNode* llHead = NULL;
+
+static struct llNode* llMakeNode(const char* str){
+  struct llNode* newNode = (struct llNode*)malloc(sizeof(struct llNode));
+  snprintf(newNode->str, MAX_LL_STRING, "%s", str);
+  newNode->next = NULL;
+  return newNode;
+}
+
+void llPush(const char* str){
+  struct llNode* newNode = llMakeNode(str);
+  newNode->next = llHead;
+  llHead = newNode;
+};
+
+void llPop(){
+  if (llHead == NULL) {
+    return;
+  }
+  struct llNode* topNode = llHead;
+  llHead = llHead->next;
+  free(topNode);
+};
+
+const char* llPeek(){
+  if (llHead == NULL) {
+    return NULL;
+  }
+  return llHead->str;
+};
+
+void llDelete(){
+  while (llHead != NULL) {
+    struct llNode* topNode = llHead;
+    llHead = llHead->next;
+    free(topNode);
+  }
+}

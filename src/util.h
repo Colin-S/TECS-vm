@@ -27,6 +27,18 @@
 
 #define test(A, M, ...) if(!(A)) { test_failure(M, ##__VA_ARGS__); goto error; }
 
+////////////////////////////////////////////////////////////
+// Binary search
+////////////////////////////////////////////////////////////
 bool binsearch(int v, int* array, size_t sz);
+
+////////////////////////////////////////////////////////////
+// Linked list stack, for tracking function names 
+//  (used to generate labels of the form functionName$labelName)
+////////////////////////////////////////////////////////////
+void llPush(const char* str);
+void llPop();
+const char* llPeek();
+void llDelete();
 
 #endif

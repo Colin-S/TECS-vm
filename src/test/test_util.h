@@ -1,6 +1,6 @@
 #ifndef TEST_UTIL_H
 #define TEST_UTIL_H
 
-int test_binsearch();
+int test_util();
 
 #endif

@@ -31,3 +31,21 @@ int test_binsearch(){
 error:
   return 1;
 }
+
+int test_linkedList(){
+  for (size_t i = 0; i < 10; ++i) {
+  }
+
+  return 0;
+error:
+  return 1;
+}
+
+int test_util(){
+  test_binsearch();
+  test_linkedList();
+
+  return 0;
+error:
+  return 1;
+}

@@ -13,7 +13,7 @@ int main(){
   test_commandTypeCheck();
   test_arg1();
   test_arg2();
-  test_binsearch();
+  test_util();
 
   return 0;
 }
