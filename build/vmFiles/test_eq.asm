@@ -115,8 +115,6 @@ M=M+1
 A=M;JMP
 
 (programStart)
-
-// Program Code /////////
 // Push constant 1
 @l0
 D=A
