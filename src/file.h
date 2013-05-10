@@ -1,11 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-#define <stdio.h>
-
-enum {
-  MAX_FILE_LENGTH = 30
-};
+#include <stdio.h>
 
 typedef struct {
   char asmFileName[FILENAME_MAX];

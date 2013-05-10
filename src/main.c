@@ -8,7 +8,7 @@ int main(int argc, char** argv){
   debug("Start");
 
   // Create asm file
-  FileInfo_t fileInfo = {"", "", "", MAX_FILE_LENGTH};
+  FileInfo_t fileInfo = {"", "", "", FILENAME_MAX};
   int ret = examineFile(argc, argv, &fileInfo);
   check_error(ret == 0, "Examine file returned error");
 

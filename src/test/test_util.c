@@ -33,12 +33,11 @@ error:
 }
 
 int test_linkedList(){
+  llPush("");
   for (size_t i = 0; i < 10; ++i) {
   }
 
   return 0;
-error:
-  return 1;
 }
 
 int test_util(){
@@ -46,6 +45,4 @@ int test_util(){
   test_linkedList();
 
   return 0;
-error:
-  return 1;
 }

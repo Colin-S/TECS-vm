@@ -13,7 +13,7 @@ int test_examineFile(){
   char* fileName = "test.vm";
   int argc = 1;
   char* argv[] = {"./vm", fileName};
-  FileInfo_t fileInfo = {"", "", "", MAX_FILE_LENGTH};
+  FileInfo_t fileInfo = {"", "", "", FILENAME_MAX};
 
   // Verify detection of incorrect number of arguments to the program
   test(examineFile(argc, argv, &fileInfo) == FAIL, "Failed argc check, argc: %d", argc);
@@ -37,7 +37,7 @@ error:
 
 int test_getFileName(){
   debug("== Testing getFileName() ==");
-  FileInfo_t fileInfo = {"", "", "", MAX_FILE_LENGTH};
+  FileInfo_t fileInfo = {"", "", "", FILENAME_MAX};
   char inFile[] = "abcdecfghijklmnopqrstuvwx.vm";
   char fileName[] = "abcdecfghijklmnopqrstuvwx";
 

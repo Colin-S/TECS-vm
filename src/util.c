@@ -19,7 +19,7 @@ bool binsearch(int v, int* array, size_t sz){
 
 ////////////////////////////////////////////////////////////
 enum {
-  MAX_LL_STRING = 100
+  MAX_LL_STRING = FILENAME_MAX + 100
 };
 
 struct llNode {

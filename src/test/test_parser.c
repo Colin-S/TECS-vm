@@ -137,7 +137,7 @@ error:
 int test_arg1(){
   debug("== Testing arg1() ==");
   Command_t currentCommand = {C_NONE, A1_NONE, A2_NONE, "", NULL, 
-    0, "", MAX_FILE_LENGTH, "", MAX_LINE_SIZE};
+    0, "", FILENAME_MAX, "", MAX_LINE_SIZE};
   test(arg1(&currentCommand, "argument") == A1_ARGUMENT, "Failed argument");
   test(arg1(&currentCommand, "local") == A1_LOCAL, "Failed local");
   test(arg1(&currentCommand, "static") == A1_STATIC, "Failed static");
