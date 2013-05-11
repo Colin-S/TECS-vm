@@ -5,11 +5,11 @@ import subprocess
 import multiprocessing
 
 #############################################################
-def keepItems(allFiles, extension, directory):
+def keepItems(allFiles, extension):
   vmFiles = []
   for fileName in allFiles:
     if (fileName[-3:] == extension):
-      vmFiles.append(os.path.join(directory, fileName))
+      vmFiles.append(fileName)
   return vmFiles
 
 #############################################################
@@ -17,27 +17,31 @@ def keepItems(allFiles, extension, directory):
 #############################################################
 def fileList():
   # Either assume vm files are in current directory, or let user specify directory
-  directory = '.'
-  if (len(sys.argv) == 2):
-    directory = sys.argv[1]
+#  directory = os.getcwd()
+#  if (len(sys.argv) == 2):
+#    directory = sys.argv[1]
 
-  # Get the files in the specified directory
-  allFiles = os.listdir(directory)
-
-  # Filter out non-vm files
-  vmFiles = keepItems(allFiles, '.vm', directory)
+  allFiles = os.listdir(os.getcwd())
+  vmFiles = keepItems(allFiles, '.vm')
   return vmFiles
 
 #############################################################
+# Create a list of commands for the pool of workers to execute.
+# One command for each vm file to translate.
+#############################################################
 def buildCommandList(vmFiles):
-  commandList = ['./vm ' + vmFile for vmFile in vmFiles]
+  vmApp = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'vm')
+  #vmApp = os.path.join(os.path.abspath(os.getcwd()), 'vm')
+  print vmApp
+  commandList = [vmApp + ' ' + vmFile for vmFile in vmFiles]
   print commandList
   return commandList
 
 #############################################################
-def translateFile(vmFile):
+def translateFile(command):
   #proc = subprocess.call('./vm ' + vmFile)
-  proc = subprocess.call(vmFile)
+  print command
+  proc = subprocess.call(command)
   return proc
 
 #############################################################
@@ -45,16 +49,15 @@ def translateFile(vmFile):
 #############################################################
 def translate(vmFiles):
   pool = multiprocessing.Pool(None)
-  print 'fileList: ' + str(vmFiles)
   commandList = buildCommandList(vmFiles)
-  #print pool.map(translateFile, vmFiles)
-  print pool.map(translateFile, ['ls'] * 4)
+  print pool.map(translateFile, commandList)
+  #print pool.map(translateFile, ['ls'] * 4)
   return 
 
 #############################################################
 def main():
   vmFiles = fileList()
-  #print 'fileList: ' + str(vmFiles)
+  print 'fileList: ' + str(vmFiles)
   asmFiles = translate(vmFiles)
   #combine(asmFiles)
   return

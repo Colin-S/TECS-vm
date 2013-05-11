@@ -1,9 +1,0 @@
-// Test vm file
-
-push constant 3
-push constant 9
-or
-push constant 9
-push constant 1
-or
-
