@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <stdlib.h>
 #include "../util.h"
 #include "../parser.h"
 
@@ -33,11 +35,34 @@ error:
 }
 
 int test_linkedList(){
-  llPush("");
-  for (size_t i = 0; i < 10; ++i) {
+  enum {BUFMAX = 50};
+  char buf[BUFMAX] = {""};
+
+  size_t max = 10;
+  for (int i = 0; i <= max; ++i) {
+    snprintf(buf, sizeof(buf), "%d", i);
+    llPush(buf);
+    test(strncmp(llPeek(), buf, sizeof(buf)) == 0, "Failed linkedList push: %d", i);
   }
 
+  for (int i = max; i >= 0; --i) {
+    snprintf(buf, sizeof(buf), "%d", i);
+    test(strncmp(llPeek(), buf, sizeof(buf)) == 0, "Failed linkedList pop: %d", i);
+    llPop();
+  }
+  test(llPeek() == NULL, "Failed linkedList pop: NULL");
+
+  for (int i = 0; i <= max; ++i) {
+    snprintf(buf, sizeof(buf), "%d", i);
+    llPush(buf);
+    test(strncmp(llPeek(), buf, sizeof(buf)) == 0, "Failed linkedList push: %d", i);
+  }
+  llDelete();
+  test(llPeek() == NULL, "Failed linkedList pop: NULL");
+
   return 0;
+error:
+  return 1;
 }
 
 int test_util(){

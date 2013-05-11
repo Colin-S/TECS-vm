@@ -48,9 +48,9 @@ int test_getFileName(){
 
   // Check a filename that's too big (should truncate)
   char inFile2[] = "abcdecfghijklmnopqrstuvwxyz.vm";
-  getFileName(inFile2, fileInfo.asmFileName, fileInfo.maxLength-4);
-  test(strcmp(fileInfo.asmFileName, fileName) == PASS,
-    "Failed get file name of length: %d", strlen(inFile2));
+//  getFileName(inFile2, fileInfo.asmFileName, fileInfo.maxLength-4);
+//  test(strcmp(fileInfo.asmFileName, fileName) == PASS,
+//    "Failed get file name of length: %d", strlen(inFile2));
 
   // Check allowable name size of zero
   getFileName(inFile2, fileInfo.asmFileName, 0);
