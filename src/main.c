@@ -12,11 +12,13 @@ int main(int argc, char** argv){
   int ret = examineFile(argc, argv, &fileInfo);
   check_error(ret == 0, "Examine file returned error");
 
-  // Parse the asm file
+  // Parse the vm file
   ret = advance(&fileInfo);
   check_error_silent(ret == 0);
 
+  llDelete();
   return 0;
 error:
+  llDelete();
   exit(1);
 }

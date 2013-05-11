@@ -41,7 +41,7 @@ int writeCall(Command_t* currentCommand);
 ///////////////////////////////////////////////////////////////////////////////
 // Store commands at the top of the file, for easy reuse
 ///////////////////////////////////////////////////////////////////////////////
-int initAsm(FILE* asmFile){
+//int initAsm(FILE* asmFile){
 //  fprintf(asmFile, "// Init Code ////////////\n");
 //  fprintf(asmFile, "%s\n", asmStrings[ASM_INIT_SP]);
 //  fprintf(asmFile, "// Init LCL (temp)\n@300\nD=A\n@LCL\nM=D\n"); //TODO:temp
@@ -49,14 +49,13 @@ int initAsm(FILE* asmFile){
 //  fprintf(asmFile, "// Init THIS (temp)\n@3000\nD=A\n@THIS\nM=D\n"); //TODO:temp
 //  fprintf(asmFile, "// Init THAT (temp)\n@3010\nD=A\n@THAT\nM=D\n"); //TODO:temp
 //  fprintf(asmFile, "\n// Program Code /////////\n");
-  return 0;
-}
+//  return 0;
+//}
 
 static uint32_t labelCount = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 int translate(Command_t* currentCommand){
-  // Which command is it?
   switch (currentCommand->command){
     case C_ADD: currentCommand->translator = writeAdd; break;
     case C_SUB: currentCommand->translator = writeSub; break;
@@ -118,6 +117,7 @@ int writeReturn(Command_t* currentCommand){
     "@4\nD=A\n@R15\nA=M-D\nD=M\n@LCL\nM=D\n"  // LCL = *(R15-4)
     "@5\nD=A\n@R15\nA=M-D\nA=M;JMP\n"         // goto *(R15-5)
     );
+    llPop();
   return 0;
 error:
   return 1;
@@ -136,6 +136,7 @@ int writeFunction(Command_t* currentCommand){
     strncat(currentCommand->asmLine, "// push 0\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
       currentCommand->maxLineSize);
   }
+  llPush(currentCommand->label);
   return 0;
 error:
   return 1;
@@ -145,9 +146,10 @@ error:
 int writeIfGoto(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_LABEL, "IF-GOTO command with non-label arg1");
   check_error(currentCommand->arg2 == A2_NONE, "IF-GOTO should have 0 arguments");
+  check_error(llPeek() != NULL, "Empty function name list");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "// if-goto %s\n@SP\nAM=M-1\nD=M\n@%s\nD;JGT\nD;JLT\n", 
-    currentCommand->label, currentCommand->label);
+    "// if-goto %s\n@SP\nAM=M-1\nD=M\n@%s$%s\nD;JGT\nD;JLT\n", 
+    currentCommand->label, currentCommand->label, llPeek());
   return 0;
 error:
   return 1;
@@ -158,8 +160,9 @@ error:
 int writeGoto(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_LABEL, "GOTO command with non-label arg1");
   check_error(currentCommand->arg2 == A2_NONE, "GOTO should have 0 arguments");
+  check_error(llPeek() != NULL, "Empty function name list");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "// goto\n@%s\n0;JMP\n", currentCommand->label);
+    "// goto\n@%s$%s\n0;JMP\n", currentCommand->label, llPeek());
   return 0;
 error:
   return 1;
@@ -169,8 +172,9 @@ error:
 int writeLabel(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_LABEL, "LABEL command with non-label arg1");
   check_error(currentCommand->arg2 == A2_NONE, "LABEL should have 0 arguments");
+  check_error(llPeek() != NULL, "Empty function name list");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "(%s)\n", currentCommand->label);
+    "(%s$%s)\n", llPeek(), currentCommand->label);
   return 0;
 error:
   return 1;

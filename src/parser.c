@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -28,8 +29,7 @@ int advance(FileInfo_t* fileInfo){
   FILE* asmFile = fopen(fileInfo->asmFileName, "w");
   check_error(asmFile != NULL, "Failed to open asmFile");
 
-  // Add initialization code to the ASM file
-  initAsm(asmFile);
+  llPush("global");
 
   // Translate each line of the input file
   int lineCount = -1;
@@ -70,9 +70,13 @@ int advance(FileInfo_t* fileInfo){
   fclose(asmFile);
   return 0;
 error:
-  fclose(vmFile);
-  fclose(asmFile);
   printf("[ERROR] %s:%d:\"%s\"\n", fileInfo->vmFileName, lineCount, tempLine);
+  if (vmFile != NULL) {
+    fclose(vmFile);
+  }
+  if (asmFile != NULL) {
+    fclose(asmFile);
+  }
   return 1;
 }
 
