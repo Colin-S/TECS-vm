@@ -149,7 +149,7 @@ int writeIfGoto(Command_t* currentCommand){
   check_error(llPeek() != NULL, "Empty function name list");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
     "// if-goto %s\n@SP\nAM=M-1\nD=M\n@%s$%s\nD;JGT\nD;JLT\n", 
-    currentCommand->label, currentCommand->label, llPeek());
+    currentCommand->label, llPeek(), currentCommand->label);
   return 0;
 error:
   return 1;
@@ -162,7 +162,7 @@ int writeGoto(Command_t* currentCommand){
   check_error(currentCommand->arg2 == A2_NONE, "GOTO should have 0 arguments");
   check_error(llPeek() != NULL, "Empty function name list");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "// goto\n@%s$%s\n0;JMP\n", currentCommand->label, llPeek());
+    "// goto\n@%s$%s\n0;JMP\n", llPeek(), currentCommand->label);
   return 0;
 error:
   return 1;
