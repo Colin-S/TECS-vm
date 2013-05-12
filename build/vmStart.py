@@ -60,7 +60,7 @@ def combine(asmFiles):
   fullAsmFile.write('// Init SP\n@256\nD=A\n@SP\nM=D\n')
 
   # Start by calling Sys.init function
-  fullAsmFile.write('call Sys.init\n')
+  fullAsmFile.write("@sys.init\n0;JMP\n")
 
   # Then add the contents of the asm files
   for asmFile in asmFiles:
