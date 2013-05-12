@@ -32,16 +32,19 @@ def fileList():
 def buildCommandList(vmFiles):
   vmApp = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'vm')
   #vmApp = os.path.join(os.path.abspath(os.getcwd()), 'vm')
-  print vmApp
-  commandList = [vmApp + ' ' + vmFile for vmFile in vmFiles]
+  #print vmApp
+  commandList = []
+  for vmFile in vmFiles:
+    commandList.append([vmApp, vmFile])
   print commandList
   return commandList
 
 #############################################################
 def translateFile(command):
   #proc = subprocess.call('./vm ' + vmFile)
-  print command
+  print 'translateFile ' + str(command)
   proc = subprocess.call(command)
+  print proc
   return proc
 
 #############################################################
