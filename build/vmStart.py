@@ -3,27 +3,25 @@ import os
 import sys
 import subprocess
 import multiprocessing
+import shutil
 
 #############################################################
 def keepItems(allFiles, extension):
-  vmFiles = []
+  keptFiles = []
   for fileName in allFiles:
-    if (fileName[-3:] == extension):
-      vmFiles.append(fileName)
-  return vmFiles
+    if (fileName.lower().endswith(extension)):
+      keptFiles.append(fileName)
+  return keptFiles
 
 #############################################################
-# Get a list of all vm files
+# Get a list of all files in the working directory,
+#  with extension
 #############################################################
-def fileList():
-  # Either assume vm files are in current directory, or let user specify directory
-#  directory = os.getcwd()
-#  if (len(sys.argv) == 2):
-#    directory = sys.argv[1]
-
+def fileList(extension):
+  # Assumes vm files are in current working directory
   allFiles = os.listdir(os.getcwd())
-  vmFiles = keepItems(allFiles, '.vm')
-  return vmFiles
+  files = keepItems(allFiles, extension)
+  return files
 
 #############################################################
 # Create a list of commands for the pool of workers to execute.
@@ -31,8 +29,6 @@ def fileList():
 #############################################################
 def buildCommandList(vmFiles):
   vmApp = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'vm')
-  #vmApp = os.path.join(os.path.abspath(os.getcwd()), 'vm')
-  #print vmApp
   commandList = []
   for vmFile in vmFiles:
     commandList.append([vmApp, vmFile])
@@ -41,10 +37,8 @@ def buildCommandList(vmFiles):
 
 #############################################################
 def translateFile(command):
-  #proc = subprocess.call('./vm ' + vmFile)
   print 'translateFile ' + str(command)
   proc = subprocess.call(command)
-  print proc
   return proc
 
 #############################################################
@@ -53,25 +47,45 @@ def translateFile(command):
 def translate(vmFiles):
   pool = multiprocessing.Pool(None)
   commandList = buildCommandList(vmFiles)
-  print pool.map(translateFile, commandList)
-  #print pool.map(translateFile, ['ls'] * 4)
+  returnVals = pool.map(translateFile, commandList)
+  if any(val != 0 for val in returnVals):
+    print '[ERROR] vm process failed'
   return 
 
 #############################################################
+def combine(asmFiles):
+  fullAsmFile = open(os.path.basename(os.getcwd()) + '.asm', 'w')
+
+  # Add stack pointer initialization
+  fullAsmFile.write('// Init SP\n@256\nD=A\n@SP\nM=D\n')
+
+  # Start by calling Sys.init function
+  fullAsmFile.write('call Sys.init\n')
+
+  # Then add the contents of the asm files
+  for asmFile in asmFiles:
+    shutil.copyfileobj(open(asmFile, 'r'), fullAsmFile)
+
+  fullAsmFile.close()
+  return 
+
+#############################################################
+def deleteFiles(asmFiles):
+  for asmFile in asmFiles:
+    os.remove(asmFile)
+
+#############################################################
 def main():
-  vmFiles = fileList()
-  print 'fileList: ' + str(vmFiles)
-  asmFiles = translate(vmFiles)
-  #combine(asmFiles)
+  deleteFiles(fileList('.asm'))
+  vmFiles = fileList('.vm')
+  #print 'vmFiles: ' + str(vmFiles)
+  translate(vmFiles)
+  asmFiles = fileList('.asm')
+  #print 'asmFiles: ' + str(asmFiles)
+  combine(asmFiles)
+  deleteFiles(asmFiles)
   return
 
 #############################################################
 if __name__ == "__main__":
   main()
-
-# get the directory containing the vm files
-# for each vm file in the directory
-  # run vm on it to get an asm file
-# Initialize the stack pointer to 256 at the beginning of the final asm file
-# concatenate the asm files into a single big asm file
-# delete the other asm filestarts
