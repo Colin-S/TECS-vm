@@ -57,10 +57,27 @@ def combine(asmFiles):
   fullAsmFile = open(os.path.basename(os.getcwd()) + '.asm', 'w')
 
   # Add stack pointer initialization
-  fullAsmFile.write('// Init SP\n@256\nD=A\n@SP\nM=D\n')
 
   # Start by calling Sys.init function
-  fullAsmFile.write("@sys.init\n0;JMP\n")
+  sysInit = (
+    "// Init SP\n@256\nD=A\n@SP\nM=D\n"                 # Init stack pointer
+    "@LCL\nM=-1\n"                                      # Write -1, to detect errors
+    "@ARG\nM=-1\n"                                      # Write -1, to detect errors
+    "@THIS\nM=-1\n"                                     # Write -1, to detect errors
+    "@THAT\nM=-1\n"                                     # Write -1, to detect errors
+    "// Call Sys.init 0\n"                          
+    "@start.sys.init\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n" # push return address
+    "@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"            # push LCL
+    "@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"            # push ARG
+    "@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"           # push THIS
+    "@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"           # push THAT
+    "@5\nD=A\n@0\nD=D+A\n@SP\nD=M-D\n@ARG\nM=D\n"       # ARG = SP-nArgs-5
+    "@SP\nD=M\n@LCL\nM=D\n"                             # LCL = SP
+    "@sys.init\n0;JMP\n"                                # goto function
+    "(start.sys.init)\n"                                # return address
+    "(halt_loop)\n@halt_loop\n0;JMP\n"                  # Infinite loop if program returns
+    )
+  fullAsmFile.write(sysInit)
 
   # Then add the contents of the asm files
   for asmFile in asmFiles:

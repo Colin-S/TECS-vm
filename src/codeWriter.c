@@ -86,7 +86,7 @@ int writeCall(Command_t* currentCommand){
   check_error(currentCommand->arg2 != A2_NONE, "CALL should have 2 arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
     "// Call %s %u\n"
-    "@call.%s\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"   // push return address
+    "@call.%s.%u\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"// push return address
     "@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"       // push LCL
     "@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"       // push ARG
     "@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"      // push THIS
@@ -94,9 +94,10 @@ int writeCall(Command_t* currentCommand){
     "@5\nD=A\n@%u\nD=D+A\n@SP\nD=M-D\n@ARG\nM=D\n" // ARG = SP-nArgs-5
     "@SP\nD=M\n@LCL\nM=D\n"                        // LCL = SP
     "@%s\n0;JMP\n"                                 // goto function
-    "(call.%s)\n"                                  // return address
-    ,currentCommand->label, currentCommand->arg2, currentCommand->label, 
-    currentCommand->arg2, currentCommand->label, currentCommand->label);
+    "(call.%s.%u)\n"                               // return address
+    ,currentCommand->label, currentCommand->arg2, currentCommand->label, labelCount,
+    currentCommand->arg2, currentCommand->label, currentCommand->label, labelCount);
+  labelCount++;
   return 0;
 error:
   return 1;
@@ -109,13 +110,14 @@ int writeReturn(Command_t* currentCommand){
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
     "// Return\n"
     "@LCL\nD=M\n@R15\nM=D\n"                  // Store LCL
+    "@5\nD=A\n@R15\nA=M-D\nD=M\n@R14\nM=D\n"  // R14 = *(R15-5)
     "@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nM=D\n"  // *ARG = pop
     "@ARG\nD=M+1\n@SP\nM=D\n"                 // SP = ARG+1
     "@1\nD=A\n@R15\nA=M-D\nD=M\n@THAT\nM=D\n" // THAT = *(R15-1)
     "@2\nD=A\n@R15\nA=M-D\nD=M\n@THIS\nM=D\n" // THIS = *(R15-2)
     "@3\nD=A\n@R15\nA=M-D\nD=M\n@ARG\nM=D\n"  // ARG = *(R15-3)
     "@4\nD=A\n@R15\nA=M-D\nD=M\n@LCL\nM=D\n"  // LCL = *(R15-4)
-    "@5\nD=A\n@R15\nA=M-D\nA=M;JMP\n"         // goto *(R15-5)
+    "@R14\nA=M;JMP\n"                         // goto *R14
     );
     llPop();
   return 0;
