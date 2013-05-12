@@ -85,7 +85,7 @@ int writeCall(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_LABEL, "CALL command with non-label arg1");
   check_error(currentCommand->arg2 != A2_NONE, "CALL should have 2 arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "// Call %s %u\n"
+    "// Call %s %u\n@7777\n"
     "@call.%s.%u\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"// push return address
     "@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"       // push LCL
     "@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"       // push ARG
@@ -108,7 +108,7 @@ int writeReturn(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "RETURN should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "RETURN should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "// Return\n"
+    "// Return\n@7777\n"
     "@LCL\nD=M\n@R15\nM=D\n"                  // Store LCL
     "@5\nD=A\n@R15\nA=M-D\nD=M\n@R14\nM=D\n"  // R14 = *(R15-5)
     "@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nM=D\n"  // *ARG = pop
@@ -119,7 +119,6 @@ int writeReturn(Command_t* currentCommand){
     "@4\nD=A\n@R15\nA=M-D\nD=M\n@LCL\nM=D\n"  // LCL = *(R15-4)
     "@R14\nA=M;JMP\n"                         // goto *R14
     );
-    llPop();
   return 0;
 error:
   return 1;
@@ -133,11 +132,13 @@ int writeFunction(Command_t* currentCommand){
   // For each local variable, push 0 onto the stack (init locals to 0)
   size_t locals = currentCommand->arg2;
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "// Function %s %u\n(%s)\n@0\nD=A\n", currentCommand->label, locals, currentCommand->label);
+    "// Function %s %u\n@7777\n(%s)\n@0\nD=A\n", currentCommand->label, 
+    locals, currentCommand->label);
   for (size_t i = 0; i < locals; ++i){
     strncat(currentCommand->asmLine, "// push 0\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
       currentCommand->maxLineSize);
   }
+  llPop();
   llPush(currentCommand->label);
   return 0;
 error:
@@ -150,7 +151,7 @@ int writeIfGoto(Command_t* currentCommand){
   check_error(currentCommand->arg2 == A2_NONE, "IF-GOTO should have 0 arguments");
   check_error(llPeek() != NULL, "Empty function name list");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "// if-goto %s\n@SP\nAM=M-1\nD=M\n@%s$%s\nD;JGT\nD;JLT\n", 
+    "// if-goto %s\n@7777\n@SP\nAM=M-1\nD=M\n@%s$%s\nD;JGT\nD;JLT\n", 
     currentCommand->label, llPeek(), currentCommand->label);
   return 0;
 error:
@@ -164,7 +165,8 @@ int writeGoto(Command_t* currentCommand){
   check_error(currentCommand->arg2 == A2_NONE, "GOTO should have 0 arguments");
   check_error(llPeek() != NULL, "Empty function name list");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-    "// goto\n@%s$%s\n0;JMP\n", llPeek(), currentCommand->label);
+    "// goto %s\n@7777\n@%s$%s\n0;JMP\n", currentCommand->label, 
+    llPeek(), currentCommand->label);
   return 0;
 error:
   return 1;
@@ -200,7 +202,7 @@ int writeOr(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "OR should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "OR should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// Or\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n");
+    "// Or\n@7777\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M|D\n@SP\nM=M+1\n");
   return 0;
 error:
   return 1;
@@ -211,7 +213,7 @@ int writeLessThan(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "LT should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "LT should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// Equal\n"
+    "// Equal\n@7777\n"
     "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nD=M-D\n"   // Subtract
     "@pushtrue%s%u\nD;JLT\n"                           // Jump if lesser
     "@SP\nA=M\nM=0\n@SP\nM=M+1\n"                      // Push false
@@ -232,7 +234,7 @@ int writeGreaterThan(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "GT should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "GT should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// Equal\n"
+    "// Equal\n@7777\n"
     "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nD=M-D\n"   // Subtract
     "@pushtrue%s%u\nD;JGT\n"                           // Jump if greater
     "@SP\nA=M\nM=0\n@SP\nM=M+1\n"                      // Push false
@@ -253,7 +255,7 @@ int writeEqual(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "EQ should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "EQ should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// Equal\n"
+    "// Equal\n@7777\n"
     "@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nD=M-D\n"   // Subtract
     "@pushtrue%s%u\nD;JEQ\n"                           // Jump if equal            
     "@SP\nA=M\nM=0\n@SP\nM=M+1\n"                      // Push false
@@ -274,7 +276,7 @@ int writeAnd(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "AND should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "AND should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// And\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M&D\n@SP\nM=M+1\n");
+    "// And\n@7777\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M&D\n@SP\nM=M+1\n");
   return 0;
 error:
   return 1;
@@ -285,7 +287,7 @@ int writeNot(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "NOT should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "NOT should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// Not\n@SP\nM=M-1\nA=M\nM=!M\n@SP\nM=M+1\n");
+    "// Not\n@7777\n@SP\nM=M-1\nA=M\nM=!M\n@SP\nM=M+1\n");
   return 0;
 error:
   return 1;
@@ -296,7 +298,7 @@ int writeNeg(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "NEG should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "NEG should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// Negate\n@SP\nM=M-1\nA=M\nM=-M\n@SP\nM=M+1\n");
+    "// Negate\n@7777\n@SP\nM=M-1\nA=M\nM=-M\n@SP\nM=M+1\n");
   return 0;
 error:
   return 1;
@@ -307,7 +309,7 @@ int writeAdd(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "ADD should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "ADD should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// Add\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M+D\n@SP\nM=M+1\n");
+    "// Add\n@7777\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M+D\n@SP\nM=M+1\n");
   return 0;
 error:
   return 1;
@@ -318,7 +320,7 @@ int writeSub(Command_t* currentCommand){
   check_error(currentCommand->arg1 == A1_NONE, "SUB should not have arguments");
   check_error(currentCommand->arg2 == A2_NONE, "SUB should not have arguments");
   snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-    "// Subtract\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M-D\n@SP\nM=M+1\n");
+    "// Subtract\n@7777\n@SP\nM=M-1\nA=M\nD=M\n@SP\nM=M-1\nA=M\nM=M-D\n@SP\nM=M+1\n");
   return 0;
 error:
   return 1;
@@ -331,7 +333,8 @@ int writePop(Command_t* currentCommand){
     {
       check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-        "// Pop argument %u\n@%u\nD=A\n@ARG\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        "// Pop argument %u\n@7777\n"
+        "@%u\nD=A\n@ARG\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
         currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
       break;
     }
@@ -339,7 +342,8 @@ int writePop(Command_t* currentCommand){
     {
       check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-        "// Pop local %u\n@%u\nD=A\n@LCL\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        "// Pop local %u\n@7777\n"
+        "@%u\nD=A\n@LCL\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
         currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
       break;
     }
@@ -347,7 +351,8 @@ int writePop(Command_t* currentCommand){
     {
       check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-        "// Pop static %u\n@SP\nAM=M-1\nD=M\n@%s.%u\nM=D\n",
+        "// Pop static %u\n@7777\n"
+        "@SP\nAM=M-1\nD=M\n@%s.%u\nM=D\n",
         currentCommand->arg2, currentCommand->filePrefix, currentCommand->arg2);
       break;
     }
@@ -355,7 +360,8 @@ int writePop(Command_t* currentCommand){
     {
       check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-        "// Pop this %u\n@%u\nD=A\n@THIS\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        "// Pop this %u\n@7777\n"
+        "@%u\nD=A\n@THIS\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
         currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
       break;
     }
@@ -363,7 +369,8 @@ int writePop(Command_t* currentCommand){
     {
       check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-        "// Pop that %u\n@%u\nD=A\n@THAT\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        "// Pop that %u\n@7777\n"
+        "@%u\nD=A\n@THAT\nD=M+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
         currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
       break;
     }
@@ -371,7 +378,8 @@ int writePop(Command_t* currentCommand){
     {
       check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-        "// Pop pointer %u\n@%u\nD=A\n@THIS\nD=A+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        "// Pop pointer %u\n@7777\n"
+        "@%u\nD=A\n@THIS\nD=A+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
         currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
       break;
     }
@@ -379,7 +387,8 @@ int writePop(Command_t* currentCommand){
     {
       check_error(currentCommand->arg2 != A2_NONE, "Invalid arg2 for POP");
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize, 
-        "// Pop temp %u\n@%u\nD=A\n@R5\nD=A+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
+        "// Pop temp %u\n@7777\n"
+        "@%u\nD=A\n@R5\nD=A+D\n@%s\nM=D\n@SP\nAM=M-1\nD=M\n@%s\nA=M\nM=D\n",
         currentCommand->arg2, currentCommand->arg2, POP_REG, POP_REG);
       break;
     }
@@ -396,42 +405,50 @@ int writePush(Command_t* currentCommand){
   switch (currentCommand->arg1){
     case A1_ARGUMENT:
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-        "// Push argument %u\n@%u\nD=A\n@ARG\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+        "// Push argument %u\n@7777\n"
+        "@%u\nD=A\n@ARG\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
         currentCommand->arg2, currentCommand->arg2);
       break;
     case A1_LOCAL:
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-        "// Push local %u\n@%u\nD=A\n@LCL\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+        "// Push local %u\n@7777\n"
+        "@%u\nD=A\n@LCL\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
         currentCommand->arg2, currentCommand->arg2);
       break;
     case A1_STATIC:
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-        "// Push static %u\n@%s.%u\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+        "// Push static %u\n@7777\n"
+        "@%s.%u\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
         currentCommand->arg2, currentCommand->filePrefix, currentCommand->arg2);
       break;
     case A1_CONSTANT:
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-        "// Push constant %u\n@%u\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+        "// Push constant %u\n@7777\n"
+        "@%u\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
         currentCommand->arg2, currentCommand->arg2);
       break;
     case A1_THIS:
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-        "// Push this %u\n@%u\nD=A\n@THIS\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+        "// Push this %u\n@7777\n"
+        "@%u\nD=A\n@THIS\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
         currentCommand->arg2, currentCommand->arg2);
       break;
     case A1_THAT:
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-        "// Push that %u\n@%u\nD=A\n@THAT\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+        "// Push that %u\n@7777\n"
+        "@%u\nD=A\n@THAT\nA=M+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
         currentCommand->arg2, currentCommand->arg2);
       break;
     case A1_POINTER:
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-        "// Push pointer %u\n@%u\nD=A\n@THIS\nA=A+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+        "// Push pointer %u\n@7777\n"
+        "@%u\nD=A\n@THIS\nA=A+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
         currentCommand->arg2, currentCommand->arg2);
       break;
     case A1_TEMP:
       snprintf(currentCommand->asmLine, currentCommand->maxLineSize,
-        "// Push temp %u\n@%u\nD=A\n@R5\nA=A+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
+        "// Push temp %u\n@7777\n"
+        "@%u\nD=A\n@R5\nA=A+D\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n",
         currentCommand->arg2, currentCommand->arg2);
       break;
     default:
